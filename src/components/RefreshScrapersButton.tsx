@@ -14,11 +14,18 @@ export function RefreshScrapersButton() {
     try {
       const res = await fetch("/api/run", { method: "POST" });
       const data = await res.json().catch(() => ({}));
+      // #region agent log
+      fetch('http://127.0.0.1:7246/ingest/b9b1c305-6a02-48ec-b43d-f18838826706',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefreshScrapersButton.tsx:handleRun',message:'api/run response',data:{status:res.status,error:data.error},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
+      // #endregion
       if (!res.ok) {
         setMessage({
           type: "error",
           text: data.error ?? `Błąd ${res.status}`,
         });
+        return;
+      }
+      if (data.configured === false && data.message) {
+        setMessage({ type: "ok", text: data.message });
         return;
       }
       setMessage({

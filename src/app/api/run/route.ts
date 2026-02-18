@@ -7,11 +7,15 @@ import { NextResponse } from "next/server";
 export const maxDuration = 120;
 
 export async function POST() {
-  const base = process.env.BACKEND_URL?.replace(/\/$/, "");
+  const raw = process.env.BACKEND_URL;
+  const base = raw?.replace(/\/$/, "");
+  // #region agent log
+  fetch('http://127.0.0.1:7246/ingest/b9b1c305-6a02-48ec-b43d-f18838826706',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/run/route.ts:POST',message:'BACKEND_URL check',data:{hasRaw:typeof raw=== 'string',rawLength:typeof raw=== 'string'?raw.length:0,hasBase:!!base},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+  // #endregion
   if (!base) {
     return NextResponse.json(
-      { ok: false, error: "BACKEND_URL not configured" },
-      { status: 503 }
+      { ok: true, configured: false, message: "BACKEND_URL nie ustawiony – ustaw w zmiennych środowiskowych, aby odświeżać oferty z backendu." },
+      { status: 200 }
     );
   }
 
