@@ -23,7 +23,7 @@ Dashboard: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 - **Apify (Facebook)** – główna obsługa w **hunter-backend**: w Apify ustaw webhook na `https://<host-backendu>/webhook/apify`, ten sam `APIFY_WEBHOOK_SECRET` w Apify i w config/env backendu. Opcjonalnie (zapas): frontend `POST /api/apify/webhook` – wtedy uzupełnij `APIFY_TOKEN` i `APIFY_WEBHOOK_SECRET` w `.env.local`.
 - **Resend** – klucz API i nadawca w `RESEND_API_KEY`, `DIGEST_FROM_EMAIL`.
 - **Cron** – Vercel wywołuje `/api/cron/notify` raz dziennie (8:00 UTC). Endpoint wymaga nagłówka `Authorization: Bearer <CRON_SECRET>` i zwraca 401 bez niego. W Vercel ustaw `CRON_SECRET` w env i w Cron Job nagłówek `Authorization: Bearer <CRON_SECRET>`.
-- **On-demand run (przycisk „Odśwież oferty”)** – w navbarze dashboardu: wywołuje backend `POST /api/run` przez proxy. Ustaw `BACKEND_URL` (np. `https://hunter-api.example.com`) i opcjonalnie `RUN_SECRET` (ten sam co `run_api.secret` w backendzie). Bez `BACKEND_URL` przycisk zwróci 503.
+- **On-demand run (przycisk „Odśwież oferty”)** – proxy do backendu `POST /api/run`. W Vercel ustaw `BACKEND_URL` (np. `https://twoja-aplikacja.up.railway.app`) i opcjonalnie `HUNTER_RUN_SECRET` (ten sam co w backendzie; nagłówek `X-Run-Secret`). Błędy są logowane w Vercel (Functions → Logs); bez `BACKEND_URL` przycisk pokaże komunikat konfiguracyjny.
 
 ### Test cron lokalnie
 
@@ -38,7 +38,7 @@ Użyj portu, na którym faktycznie działa `npm run dev` (np. 3001, jeśli 3000 
 |----------|------|
 | `GET /dashboard` | Lista ofert, filtry, statusy; przycisk „Odśwież oferty” wywołuje scrapery |
 | `PATCH /api/listings/[id]` | Aktualizacja statusu (body: `{ "status": "contacted" }`) |
-| `POST /api/run` | Proxy do backendu `POST /api/run` (on-demand scrape). Wymaga `BACKEND_URL`; opcjonalnie `RUN_SECRET` w env. |
+| `POST /api/run` | Proxy do backendu `POST /api/run` (on-demand scrape). Env: `BACKEND_URL`, opcjonalnie `HUNTER_RUN_SECRET`. |
 | `POST /api/apify/webhook` | Webhook Apify (zapas) – używaj backendu; ten endpoint tylko na awarię |
 | `GET /api/cron/notify` | Cron – wysyła digest (tylko `status = 'new'` i `notified = false`), ustawia `notified = true`. Wymaga `Authorization: Bearer CRON_SECRET`. |
 
