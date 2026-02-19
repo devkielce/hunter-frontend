@@ -7,18 +7,23 @@ import { NextResponse } from "next/server";
  */
 export const maxDuration = 120;
 
-const BACKEND_URL = process.env.BACKEND_URL;
-const HUNTER_RUN_SECRET = process.env.HUNTER_RUN_SECRET;
-
 export async function POST() {
+  const BACKEND_URL = process.env.BACKEND_URL;
+  const HUNTER_RUN_SECRET = process.env.HUNTER_RUN_SECRET;
+
+  console.error("[POST /api/run] BACKEND_URL present:", !!BACKEND_URL, "HUNTER_RUN_SECRET present:", !!HUNTER_RUN_SECRET);
+
   if (!BACKEND_URL) {
+    console.error("[POST /api/run] Returning 500: BACKEND_URL not configured.");
     return NextResponse.json(
       { error: "BACKEND_URL not configured" },
       { status: 500 }
     );
   }
 
-  const url = `${BACKEND_URL.replace(/\/$/, "")}/api/run`;
+  const base = BACKEND_URL.replace(/\/$/, "").trim();
+  const withScheme = base.startsWith("http://") || base.startsWith("https://") ? base : `https://${base}`;
+  const url = `${withScheme}/api/run`;
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -32,10 +37,21 @@ export async function POST() {
       headers,
       body: JSON.stringify({}),
     });
-    const data = await res.json().catch(() => ({}));
+    const text = await res.text();
+    let data: Record<string, unknown>;
+    try {
+      data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+    } catch {
+      console.error("[POST /api/run] Backend returned non-JSON, status:", res.status, "body length:", text.length);
+      return NextResponse.json(
+        { error: "Backend returned invalid JSON" },
+        { status: 502 }
+      );
+    }
+    console.error("[POST /api/run] Backend response status:", res.status);
     return NextResponse.json(data, { status: res.status });
   } catch (e) {
-    console.error("Proxy /api/run failed:", e);
+    console.error("[POST /api/run] Proxy fetch failed:", e);
     return NextResponse.json(
       { error: "Backend request failed" },
       { status: 502 }
