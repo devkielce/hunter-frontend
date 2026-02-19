@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 /**
  * Proxy to hunter-backend POST /api/run (Railway).
- * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret).
+ * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret; must match APIFY_WEBHOOK_SECRET on Railway).
  * Request body is forwarded (e.g. { days_back: 1 } for test runs).
  * Backend may return 202 Accepted (run in background) or 200 with results; both are forwarded.
+ * If you add GET /api/run/status (or any other route that calls Railway), send X-Run-Secret on every request.
  */
 export const maxDuration = 120;
 
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       : `https://${base}`;
   const url = `${withScheme}/api/run`;
 
+  // Required by Railway: every request to the backend must include X-Run-Secret (same value as APIFY_WEBHOOK_SECRET on Railway).
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     "X-Run-Secret": secret,
