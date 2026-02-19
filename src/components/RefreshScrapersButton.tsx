@@ -21,9 +21,13 @@ export function RefreshScrapersButton() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const fallback =
+          res.status === 500
+            ? "Server error (500). Check Vercel env: BACKEND_URL, HUNTER_RUN_SECRET; or Railway backend logs."
+            : `Error ${res.status}`;
         setMessage({
           type: "error",
-          text: data.error ?? `Błąd ${res.status}`,
+          text: (data.error as string) ?? fallback,
         });
         return;
       }

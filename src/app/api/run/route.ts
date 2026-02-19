@@ -75,6 +75,13 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+    if (res.status === 500) {
+      const msg = (data.error as string) || (data.message as string) || "Backend returned 500.";
+      return NextResponse.json(
+        { ...data, error: msg },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(data, { status: res.status });
   } catch (e) {
     clearTimeout(timeoutId);

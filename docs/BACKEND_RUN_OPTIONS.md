@@ -32,13 +32,15 @@ try:
 except Exception:
     pass
 
-# Optional: coerce to int so "1" from JSON still works
 run_days_back = body.get("days_back")
 run_max_pages = body.get("max_pages_auctions")
+# Optional: coerce to int (JSON numbers are fine; string "1" from some clients becomes int)
 if run_days_back is not None and not isinstance(run_days_back, int):
-    run_days_back = int(run_days_back) if run_days_back else None
+    try: run_days_back = int(run_days_back)
+    except (TypeError, ValueError): run_days_back = None
 if run_max_pages is not None and not isinstance(run_max_pages, int):
-    run_max_pages = int(run_max_pages) if run_max_pages else None
+    try: run_max_pages = int(run_max_pages)
+    except (TypeError, ValueError): run_max_pages = None
 ```
 
 ---
