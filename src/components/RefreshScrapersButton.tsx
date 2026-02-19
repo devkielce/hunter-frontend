@@ -24,10 +24,12 @@ export function RefreshScrapersButton() {
         const fallback =
           res.status === 500
             ? "Server error (500). Check Vercel env: BACKEND_URL, HUNTER_RUN_SECRET; or Railway backend logs."
-            : `Error ${res.status}`;
+            : res.status === 409
+              ? "A run is already in progress. Try again in a few minutes."
+              : `Error ${res.status}`;
         setMessage({
           type: "error",
-          text: (data.error as string) ?? fallback,
+          text: (data.error as string) ?? (data.message as string) ?? fallback,
         });
         return;
       }
