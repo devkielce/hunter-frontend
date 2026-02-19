@@ -3,10 +3,11 @@ import { NextResponse } from "next/server";
 /**
  * Proxy to hunter-backend POST /api/run (Railway).
  * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret).
+ * Request body is forwarded to the backend (e.g. { days_back: 1 } for "yesterday only" test runs).
  */
 export const maxDuration = 120;
 
-export async function POST() {
+export async function POST(request: Request) {
   const BACKEND_URL = process.env.BACKEND_URL;
 
   if (!BACKEND_URL) {
@@ -36,12 +37,27 @@ export async function POST() {
     "X-Run-Secret": secret,
   };
 
+  let body: Record<string, unknown> = {};
+  try {
+    const raw = await request.text();
+    if (raw.trim()) body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    // ignore invalid or empty body
+  }
+
+  // Abort before Vercel kills the function (Hobby 10s, Pro 60s). 50s leaves headroom.
+  const backendTimeoutMs = 50_000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), backendTimeoutMs);
+
   try {
     const res = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify({}),
+      body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     const text = await res.text();
     let data: Record<string, unknown>;
     try {
@@ -61,6 +77,16 @@ export async function POST() {
     }
     return NextResponse.json(data, { status: res.status });
   } catch (e) {
+    clearTimeout(timeoutId);
+    if (e instanceof Error && e.name === "AbortError") {
+      return NextResponse.json(
+        {
+          error:
+            "Backend is taking too long (timeout). The run may still be in progress on Railway. Try again in a minute or check Railway logs.",
+        },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { error: "Backend request failed" },
       { status: 502 }

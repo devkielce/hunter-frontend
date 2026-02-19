@@ -7,12 +7,18 @@ export function RefreshScrapersButton() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+  const [yesterdayOnly, setYesterdayOnly] = useState(false);
 
   const handleRun = async () => {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/run", { method: "POST" });
+      const body = yesterdayOnly ? { days_back: 1 } : {};
+      const res = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setMessage({
@@ -43,13 +49,23 @@ export function RefreshScrapersButton() {
   };
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-end gap-2">
+      <label className="flex items-center gap-2 text-sm text-neutral-600">
+        <input
+          type="checkbox"
+          checked={yesterdayOnly}
+          onChange={(e) => setYesterdayOnly(e.target.checked)}
+          disabled={loading}
+          className="rounded border-neutral-300"
+        />
+        Test run (yesterday only)
+      </label>
       <button
         type="button"
         onClick={handleRun}
         disabled={loading}
         className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 disabled:opacity-50"
-        aria-label="Uruchom scrapery (odśwież oferty)"
+        aria-label={yesterdayOnly ? "Run scrapers for yesterday only" : "Run scrapers (refresh listings)"}
       >
         {loading ? (
           <>
