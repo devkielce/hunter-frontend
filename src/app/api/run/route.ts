@@ -1,68 +1,44 @@
 import { NextResponse } from "next/server";
 
 /**
- * Proxy do hunter-backend POST /api/run (on-demand scrape).
- * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (optional, sent as X-Run-Secret).
+ * Proxy do hunter-backend POST /api/run (Railway).
+ * Frontend nie wywołuje Railway z przeglądarki – tylko ten route z secretem.
+ * Env: BACKEND_URL (wymagany), HUNTER_RUN_SECRET (ten sam co APIFY_WEBHOOK_SECRET na Railway).
  */
 export const maxDuration = 120;
 
-export async function POST() {
-  const raw = process.env.BACKEND_URL;
-  const base = raw?.replace(/\/$/, "");
+const BACKEND_URL = process.env.BACKEND_URL;
+const HUNTER_RUN_SECRET = process.env.HUNTER_RUN_SECRET;
 
-  if (!base) {
+export async function POST() {
+  if (!BACKEND_URL) {
     return NextResponse.json(
-      {
-        ok: true,
-        configured: false,
-        message:
-          "BACKEND_URL nie ustawiony – ustaw w zmiennych środowiskowych, aby odświeżać oferty z backendu.",
-      },
-      { status: 200 }
+      { error: "BACKEND_URL not configured" },
+      { status: 500 }
     );
   }
 
-  const secret = process.env.HUNTER_RUN_SECRET;
+  const url = `${BACKEND_URL.replace(/\/$/, "")}/api/run`;
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  if (secret) {
-    headers["X-Run-Secret"] = secret;
+  if (HUNTER_RUN_SECRET) {
+    headers["X-Run-Secret"] = HUNTER_RUN_SECRET;
   }
 
-  const url = `${base}/api/run`;
-  let res: Response;
   try {
-    res = await fetch(url, { method: "POST", headers });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[POST /api/run] fetch failed:", message);
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({}),
+    });
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
+  } catch (e) {
+    console.error("Proxy /api/run failed:", e);
     return NextResponse.json(
-      { ok: false, error: `Backend unreachable: ${message}` },
+      { error: "Backend request failed" },
       { status: 502 }
     );
   }
-
-  let data: Record<string, unknown>;
-  try {
-    const text = await res.text();
-    data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-  } catch {
-    console.error("[POST /api/run] backend response not JSON, status:", res.status);
-    return NextResponse.json(
-      { ok: false, error: "Backend returned non-JSON response" },
-      { status: 502 }
-    );
-  }
-
-  if (!res.ok) {
-    const errMsg = (data.error as string) ?? res.statusText;
-    console.error("[POST /api/run] backend error:", res.status, errMsg);
-    return NextResponse.json(
-      { ok: false, error: errMsg },
-      { status: res.status >= 500 ? 502 : res.status }
-    );
-  }
-
-  return NextResponse.json(data);
 }
