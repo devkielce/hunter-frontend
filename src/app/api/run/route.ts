@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 /**
  * Proxy to hunter-backend POST /api/run (Railway).
  * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret).
- * Request body is forwarded to the backend (e.g. { days_back: 1 } for "yesterday only" test runs).
+ * Request body is forwarded (e.g. { days_back: 1 } for test runs).
+ * Backend may return 202 Accepted (run in background) or 200 with results; both are forwarded.
  */
 export const maxDuration = 120;
 

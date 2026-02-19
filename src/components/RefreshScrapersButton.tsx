@@ -31,6 +31,15 @@ export function RefreshScrapersButton() {
         });
         return;
       }
+      // 202 Accepted = backend started run in background; no timeout for scrapers
+      if (res.status === 202) {
+        setMessage({
+          type: "ok",
+          text: (data.message as string) || "Run started in background. The page will refresh in 60s to show new listings.",
+        });
+        setTimeout(() => router.refresh(), 60_000);
+        return;
+      }
       if (data.configured === false && data.message) {
         setMessage({ type: "ok", text: data.message });
         return;
