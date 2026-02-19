@@ -27,8 +27,8 @@ export async function POST() {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  if (HUNTER_RUN_SECRET) {
-    headers["X-Run-Secret"] = HUNTER_RUN_SECRET;
+  if (HUNTER_RUN_SECRET?.trim()) {
+    headers["X-Run-Secret"] = HUNTER_RUN_SECRET.trim();
   }
 
   try {
