@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 /**
- * Proxy do hunter-backend POST /api/run (Railway).
- * Env: BACKEND_URL (wymagany), HUNTER_RUN_SECRET (wysyłany jako X-Run-Secret).
+ * Proxy to hunter-backend POST /api/run (Railway).
+ * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret).
  */
 export const maxDuration = 120;
 
@@ -27,9 +27,11 @@ export async function POST() {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  if (HUNTER_RUN_SECRET?.trim()) {
-    headers["X-Run-Secret"] = HUNTER_RUN_SECRET.trim();
+  const secretSent = Boolean(HUNTER_RUN_SECRET?.trim());
+  if (secretSent) {
+    headers["X-Run-Secret"] = HUNTER_RUN_SECRET!.trim();
   }
+  console.error("[POST /api/run] X-Run-Secret sent:", secretSent, "| backend response will show below");
 
   try {
     const res = await fetch(url, {
@@ -45,6 +47,14 @@ export async function POST() {
       return NextResponse.json(
         { error: "Backend returned invalid JSON" },
         { status: 502 }
+      );
+    }
+    if (res.status === 401) {
+      console.error("[POST /api/run] Backend returned 401. Ensure HUNTER_RUN_SECRET on Vercel equals backend secret (e.g. APIFY_WEBHOOK_SECRET on Railway). Redeploy after changing env.");
+      const msg = (data.error as string) || "Unauthorized";
+      return NextResponse.json(
+        { ...data, error: `${msg} – Set HUNTER_RUN_SECRET on Vercel to the same value as on Railway and redeploy.` },
+        { status: 401 }
       );
     }
     return NextResponse.json(data, { status: res.status });
