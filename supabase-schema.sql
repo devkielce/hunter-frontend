@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.listings (
   price_pln BIGINT,
   location TEXT,
   city TEXT,
+  region TEXT,
   source TEXT NOT NULL,
   source_url TEXT NOT NULL UNIQUE,
   auction_date TIMESTAMPTZ,
