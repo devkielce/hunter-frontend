@@ -20,8 +20,10 @@ function formatPrice(pricePln: number | null): string {
   }).format(pricePln / 100);
 }
 
-function isNewToday(createdAt: string): boolean {
+function isNewToday(createdAt: string | null): boolean {
+  if (createdAt == null) return false;
   const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return false;
   const today = new Date();
   return (
     created.getDate() === today.getDate() &&
@@ -94,7 +96,7 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           const displayDate =
             listing.auction_date && String(listing.auction_date).trim() !== ""
               ? listing.auction_date
-              : listing.created_at;
+              : listing.created_at ?? "";
           const isAuction =
             listing.auction_date &&
             String(listing.auction_date).trim() !== "" &&

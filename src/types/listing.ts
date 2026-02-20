@@ -18,8 +18,8 @@ export interface Listing {
   images: string[];
   status: ListingStatus | null;
   auction_date: string | null; // ISO
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
   notified: boolean;
 }
 

@@ -35,14 +35,18 @@ async function getListings(): Promise<
 }
 
 function normalizeListing(row: Record<string, unknown>): Listing {
+  const created =
+    row.created_at != null ? String(row.created_at).trim() : null;
+  const updated =
+    row.updated_at != null ? String(row.updated_at).trim() : null;
+
   return {
     id: String(row.id),
     source: String(row.source ?? ""),
     source_url: String(row.source_url ?? ""),
     title: String(row.title ?? ""),
     description: row.description != null ? String(row.description) : null,
-    price_pln:
-      row.price_pln != null ? Number(row.price_pln) : null,
+    price_pln: row.price_pln != null ? Number(row.price_pln) : null,
     city: row.city != null ? String(row.city) : null,
     location: row.location != null ? String(row.location) : null,
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
@@ -56,8 +60,8 @@ function normalizeListing(row: Record<string, unknown>): Listing {
       const s = String(v).trim();
       return s === "" ? null : s;
     })(),
-    created_at: String(row.created_at),
-    updated_at: String(row.updated_at),
+    created_at: created,
+    updated_at: updated,
     notified: Boolean(row.notified),
   };
 }
