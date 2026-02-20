@@ -5,8 +5,17 @@ import type { Listing } from "@/types/listing";
 
 export const dynamic = "force-dynamic";
 
-async function getListings(): Promise<Listing[]> {
+async function getListings(): Promise<
+  { listings: Listing[]; error: string | null }
+> {
   const supabase = createServerClient();
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return {
+      listings: [],
+      error:
+        "Brak konfiguracji Supabase (NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_SERVICE_ROLE_KEY). Sprawdź .env.local i zmienne w Vercel.",
+    };
+  }
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -14,9 +23,15 @@ async function getListings(): Promise<Listing[]> {
 
   if (error) {
     console.error("listings fetch error", error);
-    return [];
+    return {
+      listings: [],
+      error: `Nie udało się załadować ofert: ${error.message}. Sprawdź, czy frontend używa tego samego projektu Supabase co backend (scrapery).`,
+    };
   }
-  return (data ?? []).map(normalizeListing);
+  return {
+    listings: (data ?? []).map(normalizeListing),
+    error: null,
+  };
 }
 
 function normalizeListing(row: Record<string, unknown>): Listing {
@@ -55,7 +70,7 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
 }
 
 export default async function DashboardPage() {
-  const listings = await getListings();
+  const { listings, error: fetchError } = await getListings();
   const priceRange = getPriceRange(listings);
 
   return (
@@ -74,6 +89,14 @@ export default async function DashboardPage() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {fetchError && (
+          <div
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            role="alert"
+          >
+            <strong>Błąd połączenia z bazą:</strong> {fetchError}
+          </div>
+        )}
         <ListingDashboard
           initialListings={listings}
           priceRange={priceRange}
