@@ -30,6 +30,12 @@ function isNewToday(createdAt: string): boolean {
   );
 }
 
+function formatDate(value: string): string {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("pl-PL");
+}
+
 export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
   const sourceConfig = getSourceConfig(listing.source);
   const firstImage = listing.images?.[0];
@@ -83,13 +89,17 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
         <p className="text-sm text-neutral-500 mb-2">
           {[listing.location, listing.city].filter(Boolean).join(", ") || "—"}
         </p>
-        {listing.auction_date && (
+        {listing.auction_date ? (
           <p className="text-sm mb-2">
             Licytacja:{" "}
             <Countdown auctionDate={listing.auction_date} />
             <span className="text-neutral-400 ml-1">
-              ({new Date(listing.auction_date).toLocaleString("pl-PL")})
+              ({formatDate(listing.auction_date)})
             </span>
+          </p>
+        ) : (
+          <p className="text-sm text-neutral-500 mb-2">
+            Dodano: {formatDate(listing.created_at)}
           </p>
         )}
         <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{preview}</p>
