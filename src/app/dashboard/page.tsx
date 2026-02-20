@@ -18,9 +18,13 @@ export const runtime = "nodejs";
 
 const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as const;
 
-async function getListings(): Promise<
-  { listings: Listing[]; error: string | null }
-> {
+type GetListingsResult = {
+  listings: Listing[];
+  error: string | null;
+  debug?: { created_at_raw: unknown; created_at_normalized: string | null };
+};
+
+async function getListings(): Promise<GetListingsResult> {
   unstable_noStore();
   console.log("[getListings] start", {
     hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -95,6 +99,14 @@ async function getListings(): Promise<
     })),
   });
 
+  const debug: GetListingsResult["debug"] =
+    allRows.length > 0
+      ? {
+          created_at_raw: allRows[0]?.created_at,
+          created_at_normalized: listings[0]?.created_at ?? null,
+        }
+      : undefined;
+
   if (process.env.NODE_ENV === "development") {
     fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
       method: "POST",
@@ -112,6 +124,7 @@ async function getListings(): Promise<
   return {
     listings,
     error: errors.length === results.length ? errors.join("; ") : null,
+    debug,
   };
 }
 
@@ -160,14 +173,23 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
   };
 }
 
-export default async function DashboardPage() {
+type PageProps = { searchParams?: Promise<{ debug?: string }> | { debug?: string } };
+
+export default async function DashboardPage(props: PageProps) {
+  const searchParams = await (typeof props.searchParams?.then === "function"
+    ? props.searchParams
+    : Promise.resolve(props.searchParams ?? {}));
+  const showDebug = searchParams?.debug === "1";
+
   let listings: Listing[] = [];
   let fetchError: string | null = null;
+  let debug: GetListingsResult["debug"] = undefined;
 
   try {
     const result = await getListings();
     listings = result.listings ?? [];
     fetchError = result.error;
+    debug = result.debug;
   } catch (e) {
     console.error("[DashboardPage] getListings threw", e);
     fetchError = `Błąd ładowania: ${e instanceof Error ? e.message : String(e)}`;
@@ -191,6 +213,25 @@ export default async function DashboardPage() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {showDebug && debug && (
+          <div
+            className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 font-mono text-xs text-amber-900"
+            role="status"
+            aria-label="Debug: created_at format"
+          >
+            <strong>created_at (raw from Supabase):</strong>{" "}
+            <code className="break-all">
+              {typeof debug.created_at_raw === "string"
+                ? debug.created_at_raw
+                : JSON.stringify(debug.created_at_raw)}
+            </code>
+            <br />
+            <strong>created_at (after normalize):</strong>{" "}
+            <code className="break-all">
+              {debug.created_at_normalized ?? "—"}
+            </code>
+          </div>
+        )}
         {fetchError && (
           <div
             className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
