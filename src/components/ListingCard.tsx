@@ -53,12 +53,16 @@ function formatDate(value: string): string {
 
 /** Europe/Warsaw offset in ms for given date (DST: last Sun Mar – last Sun Oct). */
 function getWarsawOffsetMs(d: Date): number {
+  const ONE_HOUR_MS = 60 * 60 * 1000;
   const y = d.getUTCFullYear();
   const lastSunMar = lastSundayOfMonth(y, 3);
   const lastSunOct = lastSundayOfMonth(y, 10);
+  // Zmiana czasu w UE: 1:00 UTC (2:00 lokalne), nie północ UTC
+  const dstStart = lastSunMar + ONE_HOUR_MS;
+  const dstEnd = lastSunOct + ONE_HOUR_MS;
   const t = d.getTime();
-  const isDST = t >= lastSunMar && t < lastSunOct;
-  return (isDST ? 2 : 1) * 60 * 60 * 1000;
+  const isDST = t >= dstStart && t < dstEnd;
+  return (isDST ? 2 : 1) * ONE_HOUR_MS;
 }
 
 /** UTC timestamp of last Sunday of given month (month 1–12). */
