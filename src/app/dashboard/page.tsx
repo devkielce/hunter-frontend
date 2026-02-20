@@ -21,7 +21,8 @@ async function getListings(): Promise<
   const { data, error } = await supabase
     .from("listings")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
 
   if (error) {
     console.error("listings fetch error", error);
