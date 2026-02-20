@@ -16,6 +16,7 @@ export interface Listing {
   price_pln: number | null; // w groszach (wyświetlanie: price_pln / 100)
   city: string | null;
   location: string | null;
+  region?: string | null;
   images: string[];
   status: ListingStatus | null;
   auction_date: string | null; // ISO

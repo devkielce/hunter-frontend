@@ -38,6 +38,7 @@ function formatDate(value: string): string {
   return d.toLocaleString("pl-PL");
 }
 
+/** Same card for every source (komornik, e_licytacje, facebook). Null auction_date/price_pln show "—" or "Cena do ustalenia". */
 export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
   const sourceConfig = getSourceConfig(listing.source);
   const firstImage = listing.images?.[0];

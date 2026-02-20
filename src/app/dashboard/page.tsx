@@ -16,6 +16,7 @@ async function getListings(): Promise<
         "Brak konfiguracji Supabase (NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_SERVICE_ROLE_KEY). Sprawdź .env.local i zmienne w Vercel.",
     };
   }
+  // Fetch all listings; do not filter by source so komornik, e_licytacje, and facebook all appear.
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -40,15 +41,17 @@ function normalizeListing(row: Record<string, unknown>): Listing {
   const updated =
     row.updated_at != null ? String(row.updated_at).trim() : null;
 
+  const rawSource = String(row.source ?? "").trim();
   return {
     id: String(row.id),
-    source: String(row.source ?? ""),
+    source: rawSource.toLowerCase(),
     source_url: String(row.source_url ?? ""),
     title: String(row.title ?? ""),
     description: row.description != null ? String(row.description) : null,
     price_pln: row.price_pln != null ? Number(row.price_pln) : null,
     city: row.city != null ? String(row.city) : null,
     location: row.location != null ? String(row.location) : null,
+    region: row.region != null ? String(row.region) : null,
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
     status:
       row.status != null && typeof row.status === "string"

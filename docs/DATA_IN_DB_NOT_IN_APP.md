@@ -27,7 +27,7 @@ The dashboard does **not** filter by `source` or date in the Supabase query. It 
 
 - `.from('listings').select('*').order('created_at', { ascending: false })`
 
-So `komornik` (and any other source) is not excluded at fetch time. Filtering by source, status, city, and price happens only **client-side** in `ListingDashboard`; if the user hasn’t selected a filter, all fetched listings are shown. If you see 0 ofert, the problem is not “hidden by source filter” but either wrong project, missing env, or a failed request (see the red banner).
+So `komornik`, `e_licytacje`, and `facebook` (and any other source) are not excluded at fetch time. Filtering by source, status, city, and price happens only **client-side** in `ListingDashboard`; if the user hasn’t selected a filter, all fetched listings are shown. If you see 0 ofert, the problem is not “hidden by source filter” but either wrong project, missing env, or a failed request (see the red banner).
 
 ---
 
@@ -53,7 +53,7 @@ Fix by setting both variables for the same Supabase project and redeploying / re
    ```sql
    SELECT COUNT(*), source FROM listings GROUP BY source;
    ```
-   You should see `komornik` (and others) with expected counts.
+   You should see `komornik`, `e_licytacje`, `facebook` (and others) with expected counts.
 
 2. In this repo, confirm `NEXT_PUBLIC_SUPABASE_URL` (and `SUPABASE_SERVICE_ROLE_KEY`) point at that project’s URL and key.
 
