@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useMounted } from "@/hooks/useMounted";
 import type { Listing, ListingStatus } from "@/types/listing";
 import { getSourceConfig } from "@/types/listing";
 import { Countdown } from "./Countdown";
