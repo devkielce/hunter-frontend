@@ -1,7 +1,15 @@
+import nextDynamic from "next/dynamic";
 import { createServerClient } from "@/lib/supabase-server";
 import { ListingDashboard } from "@/components/ListingDashboard";
-import { RefreshScrapersButton } from "@/components/RefreshScrapersButton";
 import type { Listing } from "@/types/listing";
+
+const RefreshScrapersButton = nextDynamic(
+  () =>
+    import("@/components/RefreshScrapersButton").then((m) => ({
+      default: m.RefreshScrapersButton,
+    })),
+  { ssr: false }
+);
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
