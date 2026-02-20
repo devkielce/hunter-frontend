@@ -5,6 +5,6 @@
   "/page": "app/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/run/route": "app/api/run/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/api/cron/notify/route": "app/api/cron/notify/route.js"
+  "/api/cron/notify/route": "app/api/cron/notify/route.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }
