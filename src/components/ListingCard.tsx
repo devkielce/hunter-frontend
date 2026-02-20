@@ -12,13 +12,13 @@ interface ListingCardProps {
   onStatusChange: (id: string, status: ListingStatus) => void;
 }
 
+/** Temporary: no Intl to avoid hydration mismatch in production. Revert to Intl.NumberFormat("pl-PL", ...) after debugging. */
 function formatPrice(pricePln: number | null): string {
   if (pricePln == null) return "Cena do ustalenia";
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
-    maximumFractionDigits: 0,
-  }).format(pricePln / 100);
+  const zl = Math.floor(pricePln / 100);
+  const s = String(zl);
+  const withSpaces = s.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return withSpaces + " zł";
 }
 
 function isNewToday(createdAt: string | null): boolean {
