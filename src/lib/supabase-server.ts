@@ -8,7 +8,6 @@ function noStoreFetch(
   return fetch(input, {
     ...init,
     cache: "no-store",
-    next: { revalidate: 0 },
   } as RequestInit);
 }
 
