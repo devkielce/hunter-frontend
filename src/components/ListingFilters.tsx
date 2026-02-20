@@ -1,7 +1,7 @@
 "use client";
 
 import type { ListingSource, ListingStatus } from "@/types/listing";
-import { LISTING_STATUSES } from "@/types/listing";
+import { LISTING_STATUSES, getSourceConfig } from "@/types/listing";
 
 export interface FilterState {
   source: ListingSource | "";
@@ -47,7 +47,7 @@ export function ListingFilters({
           <option value="">Wszystkie</option>
           {sources.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {getSourceConfig(s).label}
             </option>
           ))}
         </select>

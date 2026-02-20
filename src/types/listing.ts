@@ -4,6 +4,7 @@ export type ListingSource =
   | "facebook"
   | "komornik"
   | "e_licytacje"
+  | "elicytacje"
   | string;
 
 export interface Listing {
