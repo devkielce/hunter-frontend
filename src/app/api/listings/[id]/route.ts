@@ -4,9 +4,10 @@ import { createServerClient } from "@/lib/supabase-server";
 /** GET /api/listings/debug-created-at — returns created_at format (for comparing local vs Vercel). Remove after use. */
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  ctx: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  const { id } = await params;
+  const params = await (typeof ctx.params?.then === "function" ? ctx.params : Promise.resolve(ctx.params));
+  const id = params?.id ?? "";
   if (id !== "debug-created-at") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
