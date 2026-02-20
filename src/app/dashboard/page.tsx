@@ -21,29 +21,13 @@ const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as
 type GetListingsResult = {
   listings: Listing[];
   error: string | null;
-  debug?: { created_at_raw: unknown; created_at_normalized: string | null };
 };
 
 async function getListings(): Promise<GetListingsResult> {
   unstable_noStore();
-  // #region agent log
-  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const hasKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "dashboard/page.tsx getListings",
-      message: "getListings start",
-      data: { hasSupabaseUrl: hasUrl, hasServiceKey: hasKey },
-      timestamp: Date.now(),
-      hypothesisId: "H2-getListings-start",
-    }),
-  }).catch(() => {});
-  // #endregion
   console.log("[getListings] start", {
-    hasSupabaseUrl: hasUrl,
-    hasServiceKey: hasKey,
+    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
 
   const supabase = createServerClient();
@@ -114,46 +98,9 @@ async function getListings(): Promise<GetListingsResult> {
     })),
   });
 
-  const debug: GetListingsResult["debug"] =
-    allRows.length > 0
-      ? {
-          created_at_raw: allRows[0]?.created_at,
-          created_at_normalized: listings[0]?.created_at ?? null,
-        }
-      : undefined;
-
-  if (process.env.NODE_ENV === "development") {
-    fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "dashboard/page.tsx getListings",
-        message: "getListings done (server)",
-        data: { count: listings.length },
-        timestamp: Date.now(),
-        hypothesisId: "server-data-shape",
-      }),
-    }).catch(() => {});
-  }
-
-  // #region agent log
-  const errMsg = errors.length === results.length ? errors.join("; ") : null;
-  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "dashboard/page.tsx getListings",
-      message: "getListings done",
-      data: { count: listings.length, error: errMsg },
-      timestamp: Date.now(),
-      hypothesisId: "H2-getListings-done",
-    }),
-  }).catch(() => {});
-  // #endregion
   return {
     listings,
-    error: errMsg,
-    debug,
+    error: errors.length === results.length ? errors.join("; ") : null,
   };
 }
 
@@ -202,36 +149,18 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
   };
 }
 
-type PageProps = { searchParams?: Promise<{ debug?: string }> | { debug?: string } };
-
-export default async function DashboardPage(_props: PageProps) {
+export default async function DashboardPage() {
   let listings: Listing[] = [];
   let fetchError: string | null = null;
-  let debug: GetListingsResult["debug"] = undefined;
 
   try {
     const result = await getListings();
     listings = result.listings ?? [];
     fetchError = result.error;
-    debug = result.debug;
   } catch (e) {
     console.error("[DashboardPage] getListings threw", e);
     fetchError = `Błąd ładowania: ${e instanceof Error ? e.message : String(e)}`;
   }
-
-  // #region agent log
-  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "dashboard/page.tsx DashboardPage",
-      message: "page rendering with listings",
-      data: { listingsCount: listings.length, fetchError: fetchError ?? null },
-      timestamp: Date.now(),
-      hypothesisId: "H3-page-render",
-    }),
-  }).catch(() => {});
-  // #endregion
 
   const priceRange = getPriceRange(listings);
 
@@ -251,28 +180,6 @@ export default async function DashboardPage(_props: PageProps) {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {debug && (
-          <div
-            className="mb-4 rounded-lg border-2 border-amber-400 bg-amber-100 px-4 py-3 font-mono text-sm text-amber-900"
-            role="status"
-            aria-label="Debug: created_at format"
-          >
-            <div className="font-semibold text-amber-800 mb-1">
-              created_at format (remove this block after comparing local vs Vercel)
-            </div>
-            <strong>raw from Supabase:</strong>{" "}
-            <code className="break-all">
-              {typeof debug.created_at_raw === "string"
-                ? debug.created_at_raw
-                : JSON.stringify(debug.created_at_raw)}
-            </code>
-            <br />
-            <strong>after normalize:</strong>{" "}
-            <code className="break-all">
-              {debug.created_at_normalized ?? "—"}
-            </code>
-          </div>
-        )}
         {fetchError && (
           <div
             className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
