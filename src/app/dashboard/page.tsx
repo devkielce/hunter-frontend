@@ -109,7 +109,7 @@ export default async function DashboardPage() {
           </div>
         )}
         <ListingDashboard
-          initialListings={listings}
+          initialListings={listings ?? []}
           priceRange={priceRange}
         />
       </main>
