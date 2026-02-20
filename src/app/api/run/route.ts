@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 /**
  * Proxy to hunter-backend POST /api/run (Railway).
  * Env: BACKEND_URL (required), HUNTER_RUN_SECRET (sent as X-Run-Secret; must match APIFY_WEBHOOK_SECRET on Railway).
- * Request body is forwarded (e.g. { days_back: 1 } for test runs).
+ * Request body is forwarded (e.g. { days_back: 1 } for test runs, { limit: 20 } for manual "Odśwież oferty" to scrape only 20 rows; daily cron does not send limit).
  * Backend may return 202 Accepted (run in background) or 200 with results; both are forwarded.
  * If you add GET /api/run/status (or any other route that calls Railway), send X-Run-Secret on every request.
  */

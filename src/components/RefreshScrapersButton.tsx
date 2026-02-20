@@ -13,7 +13,9 @@ export function RefreshScrapersButton() {
     setLoading(true);
     setMessage(null);
     try {
-      const body = yesterdayOnly ? { days_back: 1 } : {};
+      const body = yesterdayOnly
+        ? { days_back: 1 }
+        : { limit: 20 };
       const res = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
