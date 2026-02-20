@@ -41,7 +41,7 @@ export function ListingDashboard({
         message: "Dashboard mounted (client)",
         data: { listingCount: initialListings.length },
         timestamp: Date.now(),
-        hypothesisId: "local-logs",
+        hypothesisId: "H3-client-receives",
       }),
     }).catch(() => {});
   }, [initialListings.length]);

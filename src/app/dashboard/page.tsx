@@ -26,9 +26,24 @@ type GetListingsResult = {
 
 async function getListings(): Promise<GetListingsResult> {
   unstable_noStore();
+  // #region agent log
+  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const hasKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "dashboard/page.tsx getListings",
+      message: "getListings start",
+      data: { hasSupabaseUrl: hasUrl, hasServiceKey: hasKey },
+      timestamp: Date.now(),
+      hypothesisId: "H2-getListings-start",
+    }),
+  }).catch(() => {});
+  // #endregion
   console.log("[getListings] start", {
-    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    hasSupabaseUrl: hasUrl,
+    hasServiceKey: hasKey,
   });
 
   const supabase = createServerClient();
@@ -121,9 +136,23 @@ async function getListings(): Promise<GetListingsResult> {
     }).catch(() => {});
   }
 
+  // #region agent log
+  const errMsg = errors.length === results.length ? errors.join("; ") : null;
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "dashboard/page.tsx getListings",
+      message: "getListings done",
+      data: { count: listings.length, error: errMsg },
+      timestamp: Date.now(),
+      hypothesisId: "H2-getListings-done",
+    }),
+  }).catch(() => {});
+  // #endregion
   return {
     listings,
-    error: errors.length === results.length ? errors.join("; ") : null,
+    error: errMsg,
     debug,
   };
 }
@@ -189,6 +218,20 @@ export default async function DashboardPage(_props: PageProps) {
     console.error("[DashboardPage] getListings threw", e);
     fetchError = `Błąd ładowania: ${e instanceof Error ? e.message : String(e)}`;
   }
+
+  // #region agent log
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "dashboard/page.tsx DashboardPage",
+      message: "page rendering with listings",
+      data: { listingsCount: listings.length, fetchError: fetchError ?? null },
+      timestamp: Date.now(),
+      hypothesisId: "H3-page-render",
+    }),
+  }).catch(() => {});
+  // #endregion
 
   const priceRange = getPriceRange(listings);
 

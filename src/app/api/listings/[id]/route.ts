@@ -6,8 +6,21 @@ export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string }> | { id: string } }
 ) {
+  // #region agent log
   const params = await (typeof ctx.params?.then === "function" ? ctx.params : Promise.resolve(ctx.params));
   const id = params?.id ?? "";
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "api/listings/[id]/route.ts GET",
+      message: "GET handler invoked",
+      data: { id, isDebugId: id === "debug-created-at" },
+      timestamp: Date.now(),
+      hypothesisId: "H1-GET-invoked",
+    }),
+  }).catch(() => {});
+  // #endregion
   if (id !== "debug-created-at") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -37,6 +50,19 @@ export async function GET(
   const row = data as { created_at?: unknown } | null;
   const raw = row?.created_at;
   const normalized = raw != null ? String(raw).trim() : null;
+  // #region agent log
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "api/listings/[id]/route.ts GET",
+      message: "GET returning JSON",
+      data: { created_at_raw: raw, created_at_normalized: normalized },
+      timestamp: Date.now(),
+      hypothesisId: "H1-GET-response",
+    }),
+  }).catch(() => {});
+  // #endregion
   return NextResponse.json({
     created_at_raw: raw,
     created_at_raw_type: typeof raw,
