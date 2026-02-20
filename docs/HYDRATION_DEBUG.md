@@ -123,3 +123,25 @@ Those three answers usually identify the remaining cause.
 | Unknown node              | Reproduce in dev, use full non-minified error message |
 
 Dashboard, cards, Countdown, and layout have been audited; no remaining hydration risk in that tree.
+
+---
+
+## Works locally, crashes in deployment
+
+If the app runs fine with `npm run dev` but crashes or shows hydration errors in production (e.g. Vercel):
+
+1. **Use Node.js runtime for the dashboard**  
+   Deployment may use a different runtime (e.g. Edge) with different locale/timezone or APIs. Pin the route to Node:
+   ```ts
+   export const runtime = "nodejs";
+   ```
+   (Already set on the dashboard page.)
+
+2. **Keep `force-dynamic`**  
+   So each request gets a fresh server render, matching local dev. Avoid `force-static` for this page unless you need it and have verified it.
+
+3. **Check production env**  
+   Ensure `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set in the deployment (Vercel → Project → Settings → Environment Variables). Missing vars can change data or cause errors that only appear in prod.
+
+4. **Reproduce with a production build locally**  
+   Run `npm run build && npm start` and open the dashboard. If it crashes there too, you get the full (non-minified) error in the console.

@@ -3,7 +3,8 @@ import { ListingDashboard } from "@/components/ListingDashboard";
 import { RefreshScrapersButton } from "@/components/RefreshScrapersButton";
 import type { Listing } from "@/types/listing";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 async function getListings(): Promise<
   { listings: Listing[]; error: string | null }
