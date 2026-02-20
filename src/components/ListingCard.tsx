@@ -41,6 +41,7 @@ function formatDate(value: string): string {
 
 /** Same card for every source (komornik, e_licytacje, facebook). Null auction_date/price_pln show "—" or "Cena do ustalenia". */
 export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
+  const mounted = useMounted();
   const sourceConfig = getSourceConfig(listing.source);
   const firstImage = listing.images?.[0];
   const desc = listing.description?.trim();
@@ -58,7 +59,7 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           <span>{sourceConfig.icon}</span>
           {sourceConfig.label}
         </span>
-        {isNewToday(listing.created_at) && (
+        {mounted && isNewToday(listing.created_at) && (
           <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
             NOWE (dzisiaj)
           </span>
@@ -103,6 +104,17 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
             listing.auction_date &&
             String(listing.auction_date).trim() !== "" &&
             !Number.isNaN(new Date(listing.auction_date).getTime());
+          if (!mounted) {
+            return (
+              <p className="text-sm mb-2 text-neutral-500">
+                {isAuction ? (
+                  <>Licytacja: —</>
+                ) : (
+                  <span>Dodano: {displayDate || "—"}</span>
+                )}
+              </p>
+            );
+          }
           return (
             <p className="text-sm mb-2">
               {isAuction ? (
