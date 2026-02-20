@@ -14,6 +14,11 @@ export function Countdown({ auctionDate, className = "" }: CountdownProps) {
   useEffect(() => {
     const update = () => {
       const end = new Date(auctionDate).getTime();
+      if (Number.isNaN(end)) {
+        setText("—");
+        setIsUrgent(false);
+        return;
+      }
       const now = Date.now();
       const diff = end - now;
 

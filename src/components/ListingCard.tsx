@@ -39,10 +39,11 @@ function formatDate(value: string): string {
 export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
   const sourceConfig = getSourceConfig(listing.source);
   const firstImage = listing.images?.[0];
+  const desc = listing.description?.trim();
   const preview =
-    listing.description?.slice(0, 120)?.trim() +
-    (listing.description && listing.description.length > 120 ? "…" : "") ||
-    "—";
+    (desc && desc !== "undefined" && desc !== "null"
+      ? desc.slice(0, 120) + (desc.length > 120 ? "…" : "")
+      : null) || "—";
 
   return (
     <article className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
@@ -89,7 +90,10 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
         <p className="text-sm text-neutral-500 mb-2">
           {[listing.location, listing.city].filter(Boolean).join(", ") || "—"}
         </p>
-        {listing.auction_date ? (
+        {listing.auction_date &&
+        listing.auction_date !== "undefined" &&
+        listing.auction_date !== "null" &&
+        !Number.isNaN(new Date(listing.auction_date).getTime()) ? (
           <p className="text-sm mb-2">
             Licytacja:{" "}
             <Countdown auctionDate={listing.auction_date} />
