@@ -90,22 +90,33 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
         <p className="text-sm text-neutral-500 mb-2">
           {[listing.location, listing.city].filter(Boolean).join(", ") || "—"}
         </p>
-        {listing.auction_date &&
-        listing.auction_date !== "undefined" &&
-        listing.auction_date !== "null" &&
-        !Number.isNaN(new Date(listing.auction_date).getTime()) ? (
-          <p className="text-sm mb-2">
-            Licytacja:{" "}
-            <Countdown auctionDate={listing.auction_date} />
-            <span className="text-neutral-400 ml-1">
-              ({formatDate(listing.auction_date)})
-            </span>
-          </p>
-        ) : (
-          <p className="text-sm text-neutral-500 mb-2">
-            Dodano: {formatDate(listing.created_at)}
-          </p>
-        )}
+        {(() => {
+          const displayDate =
+            listing.auction_date && String(listing.auction_date).trim() !== ""
+              ? listing.auction_date
+              : listing.created_at;
+          const isAuction =
+            listing.auction_date &&
+            String(listing.auction_date).trim() !== "" &&
+            !Number.isNaN(new Date(listing.auction_date).getTime());
+          return (
+            <p className="text-sm mb-2">
+              {isAuction ? (
+                <>
+                  Licytacja:{" "}
+                  <Countdown auctionDate={listing.auction_date!} />
+                  <span className="text-neutral-400 ml-1">
+                    ({formatDate(displayDate)})
+                  </span>
+                </>
+              ) : (
+                <span className="text-neutral-500">
+                  Dodano: {formatDate(displayDate)}
+                </span>
+              )}
+            </p>
+          );
+        })()}
         <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{preview}</p>
 
         <div className="mt-auto flex flex-wrap gap-2">

@@ -50,8 +50,12 @@ function normalizeListing(row: Record<string, unknown>): Listing {
       row.status != null && typeof row.status === "string"
         ? (row.status as Listing["status"])
         : "new",
-    auction_date:
-      row.auction_date != null ? String(row.auction_date) : null,
+    auction_date: (() => {
+      const v = row.auction_date;
+      if (v == null) return null;
+      const s = String(v).trim();
+      return s === "" ? null : s;
+    })(),
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
     notified: Boolean(row.notified),
