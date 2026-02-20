@@ -12,8 +12,11 @@ const RefreshScrapersButton = nextDynamic(
   { ssr: false }
 );
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// TEMP: test if hydration error is caused by live data changing between SSR and client
+// If error disappears with revalidate=60, it was data churn. Restore force-dynamic + revalidate=0 after test.
+export const revalidate = 60;
+// export const dynamic = "force-dynamic";
+// export const revalidate = 0;
 export const runtime = "nodejs";
 
 const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as const;

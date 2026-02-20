@@ -93,11 +93,16 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           <span>{sourceConfig.icon}</span>
           {sourceConfig.label}
         </span>
-        {mounted && isNewToday(listing.created_at) && (
-          <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-            NOWE (dzisiaj)
-          </span>
-        )}
+        <span
+          suppressHydrationWarning
+          className={
+            mounted && isNewToday(listing.created_at)
+              ? "rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800"
+              : "invisible"
+          }
+        >
+          {mounted && isNewToday(listing.created_at) ? "NOWE (dzisiaj)" : "\u200b"}
+        </span>
       </div>
 
       {firstImage && (
@@ -129,40 +134,34 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
         <p className="text-sm text-neutral-500 mb-2">
           {[listing.location, listing.city].filter(Boolean).join(", ") || "—"}
         </p>
-        {(() => {
-          const displayDate =
-            listing.auction_date && String(listing.auction_date).trim() !== ""
-              ? listing.auction_date
-              : listing.created_at ?? "";
-          const isAuction =
-            listing.auction_date &&
-            String(listing.auction_date).trim() !== "" &&
-            !Number.isNaN(new Date(listing.auction_date).getTime());
-          if (!mounted) {
-            return (
-              <p className="text-sm mb-2 text-neutral-500">
-                {isAuction ? <>Licytacja: —</> : <>Dodano: —</>}
-              </p>
-            );
-          }
-          return (
-            <p className="text-sm mb-2">
-              {isAuction ? (
-                <>
-                  Licytacja:{" "}
-                  <Countdown auctionDate={listing.auction_date!} />
-                  <span className="text-neutral-400 ml-1">
-                    ({formatDate(displayDate)})
-                  </span>
-                </>
-              ) : (
-                <span className="text-neutral-500">
-                  Dodano: {formatDate(displayDate)}
+        <p className="text-sm mb-2 text-neutral-500" suppressHydrationWarning>
+          {(() => {
+            const displayDate =
+              listing.auction_date && String(listing.auction_date).trim() !== ""
+                ? listing.auction_date
+                : listing.created_at ?? "";
+            const isAuction =
+              listing.auction_date &&
+              String(listing.auction_date).trim() !== "" &&
+              !Number.isNaN(new Date(listing.auction_date).getTime());
+            if (!mounted) {
+              return isAuction ? "Licytacja: —" : "Dodano: —";
+            }
+            return isAuction ? (
+              <>
+                Licytacja:{" "}
+                <Countdown auctionDate={listing.auction_date!} />
+                <span className="text-neutral-400 ml-1">
+                  ({formatDate(displayDate)})
                 </span>
-              )}
-            </p>
-          );
-        })()}
+              </>
+            ) : (
+              <span className="text-neutral-500">
+                Dodano: {formatDate(displayDate)}
+              </span>
+            );
+          })()}
+        </p>
         <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{preview}</p>
 
         <div className="mt-auto flex flex-wrap gap-2">
