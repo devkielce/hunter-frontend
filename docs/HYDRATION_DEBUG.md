@@ -50,9 +50,16 @@ Open the same page. If it disappears in production → not a real hydration bug 
 
 ---
 
-## 4. Runtime / locale difference
+## 4. Runtime / locale difference (daty i formatowanie)
 
-Server and client can have different timezone/locale. Our time-based UI is gated by `useMounted()`, so this is unlikely to be the cause — but if you want to verify:
+Server and client can have different timezone/locale. **Formatowanie dat** bez jawnego `timeZone` (np. `toLocaleString('pl-PL')` bez opcji) daje różny wynik na serwerze i kliencie → błąd hydratacji.
+
+- **Zasady i przykłady:** [FRONTEND_HYDRATION_CHECKLIST.md](./FRONTEND_HYDRATION_CHECKLIST.md) (sekcja 4 – formatowanie dat).  
+- **Snippety „przed” / „po”:** [FRONTEND_RENDER_SNIPPET.md](./FRONTEND_RENDER_SNIPPET.md).
+
+Nasz UI z datami jest gated by `useMounted()` i placeholdery przy pierwszym renderze, więc ten punkt jest zabezpieczony — ale przy dodawaniu nowych dat w UI trzymaj się zasad z checklisty.
+
+Jeśli chcesz zweryfikować środowisko:
 
 - Server: log `Intl.DateTimeFormat().resolvedOptions()` in a server component or API route.
 - Client: same in browser console.

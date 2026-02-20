@@ -33,19 +33,40 @@ function isNewToday(createdAt: string | null): boolean {
   );
 }
 
-/** Deterministic date format (explicit locale + timezone) to avoid server/client hydration mismatch. */
+/** Deterministic date format (no Intl) to avoid server/client hydration mismatch. */
 function formatDate(value: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString("pl-PL", {
-    timeZone: "Europe/Warsaw",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const utc = d.getTime();
+  const offset = getWarsawOffsetMs(d);
+  const t = utc + offset;
+  const w = new Date(t);
+  const day = w.getUTCDate();
+  const month = w.getUTCMonth() + 1;
+  const year = w.getUTCFullYear();
+  const h = w.getUTCHours();
+  const min = w.getUTCMinutes();
+  const sec = w.getUTCSeconds();
+  return `${pad(day)}.${pad(month)}.${year}, ${pad(h)}:${pad(min)}:${pad(sec)}`;
+}
+
+/** Europe/Warsaw offset in ms for given date (DST: last Sun Mar – last Sun Oct). */
+function getWarsawOffsetMs(d: Date): number {
+  const y = d.getUTCFullYear();
+  const lastSunMar = lastSundayOfMonth(y, 3);
+  const lastSunOct = lastSundayOfMonth(y, 10);
+  const t = d.getTime();
+  const isDST = t >= lastSunMar && t < lastSunOct;
+  return (isDST ? 2 : 1) * 60 * 60 * 1000;
+}
+
+/** UTC timestamp of last Sunday of given month (month 1–12). */
+function lastSundayOfMonth(year: number, month: number): number {
+  const last = new Date(Date.UTC(year, month, 0));
+  const day = last.getUTCDay();
+  last.setUTCDate(last.getUTCDate() - (day === 0 ? 7 : day));
+  return last.getTime();
 }
 
 /** Same card for every source (komornik, e_licytacje, facebook). Null auction_date/price_pln show "—" or "Cena do ustalenia". */
@@ -116,11 +137,7 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           if (!mounted) {
             return (
               <p className="text-sm mb-2 text-neutral-500">
-                {isAuction ? (
-                  <>Licytacja: —</>
-                ) : (
-                  <span>Dodano: {displayDate || "—"}</span>
-                )}
+                {isAuction ? <>Licytacja: —</> : <>Dodano: —</>}
               </p>
             );
           }

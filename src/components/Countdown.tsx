@@ -8,7 +8,7 @@ interface CountdownProps {
 }
 
 export function Countdown({ auctionDate, className = "" }: CountdownProps) {
-  const [text, setText] = useState<string>("");
+  const [text, setText] = useState<string>("—");
   const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {

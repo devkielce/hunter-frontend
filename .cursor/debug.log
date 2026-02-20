@@ -17,3 +17,7 @@
 {"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591594862,"hypothesisId":"server-data-shape"}
 {"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591595627,"hypothesisId":"local-logs"}
 {"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591595630,"hypothesisId":"local-logs"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771592001574,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771592012342,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771592131862,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771592147218,"hypothesisId":"server-data-shape"}
