@@ -1,5 +1,4 @@
 import nextDynamic from "next/dynamic";
-import { headers } from "next/headers";
 import { unstable_noStore } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
 import { ListingDashboard } from "@/components/ListingDashboard";
@@ -176,17 +175,7 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
 
 type PageProps = { searchParams?: Promise<{ debug?: string }> | { debug?: string } };
 
-export default async function DashboardPage(props: PageProps) {
-  const headersList = await headers();
-  const debugHeader = headersList.get("x-debug-created-at");
-  const searchParams = await (typeof props.searchParams?.then === "function"
-    ? props.searchParams
-    : Promise.resolve(props.searchParams ?? {}));
-  const showDebug =
-    debugHeader === "1" ||
-    searchParams?.debug === "1" ||
-    searchParams?.debug === "true";
-
+export default async function DashboardPage(_props: PageProps) {
   let listings: Listing[] = [];
   let fetchError: string | null = null;
   let debug: GetListingsResult["debug"] = undefined;
@@ -219,20 +208,23 @@ export default async function DashboardPage(props: PageProps) {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {showDebug && debug && (
+        {debug && (
           <div
-            className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 font-mono text-xs text-amber-900"
+            className="mb-4 rounded-lg border-2 border-amber-400 bg-amber-100 px-4 py-3 font-mono text-sm text-amber-900"
             role="status"
             aria-label="Debug: created_at format"
           >
-            <strong>created_at (raw from Supabase):</strong>{" "}
+            <div className="font-semibold text-amber-800 mb-1">
+              created_at format (remove this block after comparing local vs Vercel)
+            </div>
+            <strong>raw from Supabase:</strong>{" "}
             <code className="break-all">
               {typeof debug.created_at_raw === "string"
                 ? debug.created_at_raw
                 : JSON.stringify(debug.created_at_raw)}
             </code>
             <br />
-            <strong>created_at (after normalize):</strong>{" "}
+            <strong>after normalize:</strong>{" "}
             <code className="break-all">
               {debug.created_at_normalized ?? "—"}
             </code>
