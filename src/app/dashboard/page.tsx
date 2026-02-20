@@ -1,4 +1,5 @@
 import nextDynamic from "next/dynamic";
+import { unstable_noStore } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
 import { ListingDashboard } from "@/components/ListingDashboard";
 import type { Listing } from "@/types/listing";
@@ -18,6 +19,7 @@ export const runtime = "nodejs";
 async function getListings(): Promise<
   { listings: Listing[]; error: string | null }
 > {
+  unstable_noStore();
   // #region agent log
   console.log("[getListings] start", {
     hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,7 +50,20 @@ async function getListings(): Promise<
   }
   const listings = (data ?? []).map(normalizeListing);
   // #region agent log
-  console.log("[getListings] done", { count: listings.length });
+  const sample = listings.slice(0, 3).map((l) => l.created_at);
+  const last = listings.length > 0 ? listings[listings.length - 1].created_at : null;
+  console.log("[getListings] done", { count: listings.length, sample, last });
+  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "dashboard/page.tsx getListings",
+      message: "getListings done (server)",
+      data: { count: listings.length, sampleCreatedAt: sample, lastCreatedAt: last },
+      timestamp: Date.now(),
+      hypothesisId: "server-data-shape",
+    }),
+  }).catch(() => {});
   // #endregion
   return {
     listings,

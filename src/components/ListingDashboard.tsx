@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import type { Listing, ListingStatus } from "@/types/listing";
 import { ListingCard } from "./ListingCard";
 import { ListingFilters, type FilterState } from "./ListingFilters";
@@ -29,6 +29,22 @@ export function ListingDashboard({
     priceMax: priceRange.max,
   });
   const [listings, setListings] = useState<Listing[]>(initialListings);
+
+  // #region agent log
+  useEffect(() => {
+    fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: "ListingDashboard.tsx",
+        message: "Dashboard mounted (client)",
+        data: { listingCount: initialListings.length },
+        timestamp: Date.now(),
+        hypothesisId: "local-logs",
+      }),
+    }).catch(() => {});
+  }, [initialListings.length]);
+  // #endregion
 
   const sources = useMemo(
     () =>

@@ -1,1 +1,0 @@
-"use strict";exports.id=955,exports.ids=[955],exports.modules={19955:(r,e,s)=>{s.r(e),s.d(e,{RefreshScrapersButton:()=>t});let t=(0,s(68570).createProxy)(String.raw`/Users/arturwillonski/Documents/hunter-frontend/src/components/RefreshScrapersButton.tsx#RefreshScrapersButton`)}};
