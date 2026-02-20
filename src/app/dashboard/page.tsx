@@ -82,8 +82,40 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
   };
 }
 
+/** One static listing for HYDRATION_DEBUG=static. Remove after debugging. */
+const STATIC_LISTING: Listing = {
+  id: "debug-static-1",
+  source: "komornik",
+  source_url: "https://example.com/1",
+  title: "Static test listing",
+  description: null,
+  price_pln: 200_000_00,
+  city: "Kielce",
+  location: null,
+  images: [],
+  status: "new",
+  auction_date: "2025-12-01T10:00:00.000Z",
+  created_at: "2025-01-01T00:00:00.000Z",
+  updated_at: null,
+  notified: false,
+};
+
 export default async function DashboardPage() {
-  const { listings, error: fetchError } = await getListings();
+  const debugMode = process.env.NEXT_PUBLIC_HYDRATION_DEBUG;
+
+  let listings: Listing[];
+  let fetchError: string | null = null;
+
+  if (debugMode === "minimal") {
+    listings = [];
+  } else if (debugMode === "static") {
+    listings = [STATIC_LISTING];
+  } else {
+    const result = await getListings();
+    listings = result.listings ?? [];
+    fetchError = result.error;
+  }
+
   const priceRange = getPriceRange(listings);
 
   return (
@@ -102,6 +134,9 @@ export default async function DashboardPage() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {debugMode === "minimal" && (
+          <p className="text-sm text-neutral-500">HYDRATION_DEBUG=minimal</p>
+        )}
         {fetchError && (
           <div
             className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
@@ -110,10 +145,14 @@ export default async function DashboardPage() {
             <strong>Błąd połączenia z bazą:</strong> {fetchError}
           </div>
         )}
-        <ListingDashboard
-          initialListings={listings ?? []}
-          priceRange={priceRange}
-        />
+        {debugMode === "minimal" ? (
+          <div>Dashboard</div>
+        ) : (
+          <ListingDashboard
+            initialListings={listings}
+            priceRange={priceRange}
+          />
+        )}
       </main>
     </div>
   );

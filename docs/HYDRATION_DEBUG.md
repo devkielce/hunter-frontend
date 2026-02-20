@@ -145,3 +145,17 @@ If the app runs fine with `npm run dev` but crashes or shows hydration errors in
 
 4. **Reproduce with a production build locally**  
    Run `npm run build && npm start` and open the dashboard. If it crashes there too, you get the full (non-minified) error in the console.
+
+---
+
+## Three diagnostic tests (env-controlled)
+
+Set `NEXT_PUBLIC_HYDRATION_DEBUG` in `.env.local` (or in Vercel env vars), then `npm run build && npm start` (or redeploy).
+
+| Test | Set env to | What it does | If error disappears → |
+|------|------------|--------------|------------------------|
+| **1. Reproduce locally** | (unset) | Normal dashboard, real fetch | You get full error in console; fix from there. |
+| **2. Static listings** | `static` | One hardcoded listing, full `ListingDashboard` | Problem is **dynamic data** (fetch/order/normalize). |
+| **3. Minimal main** | `minimal` | Replaces `ListingDashboard` with `<div>Dashboard</div>` | Problem is inside **ListingDashboard** (or its children). |
+
+Remove the env var and the debug code in `dashboard/page.tsx` after debugging.
