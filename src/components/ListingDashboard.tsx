@@ -30,8 +30,9 @@ export function ListingDashboard({
   });
   const [listings, setListings] = useState<Listing[]>(initialListings);
 
-  // #region agent log
+  // #region agent log (dev only)
   useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
     fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -33,10 +33,19 @@ function isNewToday(createdAt: string | null): boolean {
   );
 }
 
+/** Deterministic date format (explicit locale + timezone) to avoid server/client hydration mismatch. */
 function formatDate(value: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString("pl-PL");
+  return d.toLocaleString("pl-PL", {
+    timeZone: "Europe/Warsaw",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
 /** Same card for every source (komornik, e_licytacje, facebook). Null auction_date/price_pln show "—" or "Cena do ustalenia". */

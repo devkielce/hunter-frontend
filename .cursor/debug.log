@@ -5,3 +5,15 @@
 {"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771590079397,"hypothesisId":"local-logs"}
 {"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771590079401,"hypothesisId":"local-logs"}
 {"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865,"sampleCreatedAt":["2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00"],"lastCreatedAt":"2026-02-18T08:30:39.86345+00:00"},"timestamp":1771590109647,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865,"sampleCreatedAt":["2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00"],"lastCreatedAt":"2026-02-18T08:30:39.86345+00:00"},"timestamp":1771591039242,"hypothesisId":"server-data-shape"}
+{"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591040067,"hypothesisId":"local-logs"}
+{"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591040070,"hypothesisId":"local-logs"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865,"sampleCreatedAt":["2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00"],"lastCreatedAt":"2026-02-18T08:30:39.86345+00:00"},"timestamp":1771591109813,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865,"sampleCreatedAt":["2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00","2026-02-20T09:47:39.895781+00:00"],"lastCreatedAt":"2026-02-18T08:30:39.86345+00:00"},"timestamp":1771591113802,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591298633,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591318415,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591321946,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591524391,"hypothesisId":"server-data-shape"}
+{"location":"dashboard/page.tsx getListings","message":"getListings done (server)","data":{"count":865},"timestamp":1771591594862,"hypothesisId":"server-data-shape"}
+{"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591595627,"hypothesisId":"local-logs"}
+{"location":"ListingDashboard.tsx","message":"Dashboard mounted (client)","data":{"listingCount":865},"timestamp":1771591595630,"hypothesisId":"local-logs"}

@@ -16,16 +16,17 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
 
+const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as const;
+
 async function getListings(): Promise<
   { listings: Listing[]; error: string | null }
 > {
   unstable_noStore();
-  // #region agent log
   console.log("[getListings] start", {
     hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
-  // #endregion
+
   const supabase = createServerClient();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return {
@@ -34,40 +35,83 @@ async function getListings(): Promise<
         "Brak konfiguracji Supabase (NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_SERVICE_ROLE_KEY). Sprawdź .env.local i zmienne w Vercel.",
     };
   }
-  // Fetch all listings; do not filter by source so komornik, e_licytacje, and facebook all appear.
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false });
 
-  if (error) {
-    console.error("listings fetch error", error);
-    return {
-      listings: [],
-      error: `Nie udało się załadować ofert: ${error.message}. Sprawdź, czy frontend używa tego samego projektu Supabase co backend (scrapery).`,
-    };
+  // Fetch each source in parallel so we always get all sources (avoids single-query 1000 row limit and ordering issues).
+  const results = await Promise.allSettled(
+    LISTING_SOURCES.map((source) =>
+      supabase
+        .from("listings")
+        .select("*")
+        .eq("source", source)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(2000)
+    )
+  );
+
+  const allRows: Record<string, unknown>[] = [];
+  const errors: string[] = [];
+  results.forEach((outcome, i) => {
+    const source = LISTING_SOURCES[i];
+    if (outcome.status === "rejected") {
+      errors.push(`${source}: ${String(outcome.reason)}`);
+      return;
+    }
+    const { data, error } = outcome.value;
+    if (error) {
+      errors.push(`${source}: ${error.message}`);
+      return;
+    }
+    allRows.push(...(data ?? []));
+  });
+
+  if (errors.length > 0) {
+    console.error("[getListings] partial errors", errors);
   }
-  const listings = (data ?? []).map(normalizeListing);
-  // #region agent log
-  const sample = listings.slice(0, 3).map((l) => l.created_at);
-  const last = listings.length > 0 ? listings[listings.length - 1].created_at : null;
-  console.log("[getListings] done", { count: listings.length, sample, last });
-  fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "dashboard/page.tsx getListings",
-      message: "getListings done (server)",
-      data: { count: listings.length, sampleCreatedAt: sample, lastCreatedAt: last },
-      timestamp: Date.now(),
-      hypothesisId: "server-data-shape",
-    }),
-  }).catch(() => {});
-  // #endregion
+
+  // Sort merged results by created_at desc, id desc
+  allRows.sort((a, b) => {
+    const aDate = String(a?.created_at ?? "");
+    const bDate = String(b?.created_at ?? "");
+    if (aDate !== bDate) return bDate.localeCompare(aDate);
+    const aId = String(a?.id ?? "");
+    const bId = String(b?.id ?? "");
+    return bId.localeCompare(aId);
+  });
+
+  const listings: Listing[] = [];
+  for (const row of allRows) {
+    try {
+      listings.push(normalizeListing(row as Record<string, unknown>));
+    } catch (e) {
+      console.warn("[getListings] skip row", row?.id, e);
+    }
+  }
+
+  console.log("[getListings] done", {
+    count: listings.length,
+    bySource: LISTING_SOURCES.map((s) => ({
+      [s]: listings.filter((l) => l.source === s).length,
+    })),
+  });
+
+  if (process.env.NODE_ENV === "development") {
+    fetch("http://127.0.0.1:7247/ingest/2f25b38f-b1a7-4d41-b3f9-9c5c122cfa60", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: "dashboard/page.tsx getListings",
+        message: "getListings done (server)",
+        data: { count: listings.length },
+        timestamp: Date.now(),
+        hypothesisId: "server-data-shape",
+      }),
+    }).catch(() => {});
+  }
+
   return {
     listings,
-    error: null,
+    error: errors.length === results.length ? errors.join("; ") : null,
   };
 }
 
@@ -117,8 +161,19 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
 }
 
 export default async function DashboardPage() {
-  const { listings, error: fetchError } = await getListings();
-  const priceRange = getPriceRange(listings ?? []);
+  let listings: Listing[] = [];
+  let fetchError: string | null = null;
+
+  try {
+    const result = await getListings();
+    listings = result.listings ?? [];
+    fetchError = result.error;
+  } catch (e) {
+    console.error("[DashboardPage] getListings threw", e);
+    fetchError = `Błąd ładowania: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
+  const priceRange = getPriceRange(listings);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -145,7 +200,7 @@ export default async function DashboardPage() {
           </div>
         )}
         <ListingDashboard
-          initialListings={listings ?? []}
+          initialListings={listings}
           priceRange={priceRange}
         />
       </main>
