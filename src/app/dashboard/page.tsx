@@ -1,4 +1,5 @@
 import nextDynamic from "next/dynamic";
+import { headers } from "next/headers";
 import { unstable_noStore } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
 import { ListingDashboard } from "@/components/ListingDashboard";
@@ -176,10 +177,15 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
 type PageProps = { searchParams?: Promise<{ debug?: string }> | { debug?: string } };
 
 export default async function DashboardPage(props: PageProps) {
+  const headersList = await headers();
+  const debugHeader = headersList.get("x-debug-created-at");
   const searchParams = await (typeof props.searchParams?.then === "function"
     ? props.searchParams
     : Promise.resolve(props.searchParams ?? {}));
-  const showDebug = searchParams?.debug === "1";
+  const showDebug =
+    debugHeader === "1" ||
+    searchParams?.debug === "1" ||
+    searchParams?.debug === "true";
 
   let listings: Listing[] = [];
   let fetchError: string | null = null;
