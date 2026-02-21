@@ -30,6 +30,16 @@ export function ListingDashboard({
   });
   const [listings, setListings] = useState<Listing[]>(initialListings);
 
+  // Sync when server refetches (e.g. after "Odśwież oferty" or run completion)
+  useEffect(() => {
+    setListings(initialListings);
+    setFilters((f) => ({
+      ...f,
+      priceMin: priceRange.min,
+      priceMax: priceRange.max,
+    }));
+  }, [initialListings, priceRange.min, priceRange.max]);
+
   const sources = useMemo(
     () =>
       Array.from(

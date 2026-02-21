@@ -9,7 +9,7 @@ Single source of truth for the **Hunter** frontend: app description, architectur
 **Hunter** is a production-oriented system for **Polish real estate listings**:
 
 - **Backend (hunter-backend, separate repo):** Python scrapers and webhook server. Collects listings from **komornik** (bailiff auctions), **e_licytacje** (court auctions), and **Facebook** (via Apify). Normalizes to a single schema, upserts to **Supabase**, and exposes `/webhook/apify` (Apify) and `/api/run` + `/api/run/status` (on-demand run).
-- **Frontend (this repo):** Next.js dashboard: filters (source, status, city, price), sort by price, result count; listing **status** (new / contacted / viewed / archived) via PATCH; **countdown** to auction date; **“NOWE (dzisiaj)”** badge; daily **e-mail digest** (Resend); **“Odśwież oferty”** button that proxies to backend `POST /api/run`.
+- **Frontend (this repo):** Next.js dashboard: filters (source, status, city, price), sort by price, result count; listing **status** (new / contacted / viewed / archived) via PATCH; **countdown** to auction date; **“NOWE (dzisiaj)”** badge; daily **e-mail digest** (Resend); **“Odśwież oferty”** only refetches the list from the DB (no backend call). **"Uruchom scrapery"** calls proxy `POST /api/run`, then polls `GET /api/run/status` until completed, then refetches.
 - **Data:** One Supabase project. Tables: `listings` (shared), `alert_rules` (frontend: digest recipients), `scrape_runs` (backend only). **Schema source of truth** is backend’s **`supabase_schema.sql`**; this repo keeps **`supabase-schema.sql`** for reference — run the backend schema once in Supabase SQL editor.
 
 **Active sources:** komornik, e_licytacje, Facebook (Apify). OLX, Otodom, Gratka are disabled in backend config but frontend SOURCE_CONFIG includes them for display.
@@ -39,9 +39,8 @@ Single source of truth for the **Hunter** frontend: app description, architectur
                                     │
 ┌───────────────────────────────────▼─────────────────────────────────────┐
 │  Frontend (this repo, Vercel)                                            │
-│  Dashboard, filters, PATCH status, cron digest, proxy POST /api/run     │
-│  (Browser never calls backend; only Vercel API routes proxy with         │
-│   X-Run-Secret.)                                                        │
+│  Dashboard, filters, PATCH status, cron digest; proxy POST /api/run and  │
+│  GET /api/run/status (Vercel sends X-Run-Secret).                       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -85,7 +84,7 @@ Dates: use `listing.auction_date || listing.created_at` for display; normalize w
 | `GET /dashboard` | Main dashboard: listings, filters, statuses, “Odśwież oferty” |
 | `PATCH /api/listings/[id]` | Update listing status (body: `{ "status": "contacted" }`) |
 | `POST /api/run` | Proxy to backend `POST /api/run` (on-demand scrape). Body optional: `{ "days_back": 1 }`, `{ "max_pages_auctions": 1 }`. Sends `X-Run-Secret`. |
-| `GET /api/run/status` | **Not implemented in frontend.** Backend supports it for polling; can be added as a proxy if UI needs run status. |
+| `GET /api/run/status` | Proxy to backend. Used after 202 from POST /api/run to poll until completed/error. Sends X-Run-Secret. |
 | `POST /api/apify/webhook` | Apify webhook **fallback** (main handling in backend `/webhook/apify`) |
 | `GET /api/cron/notify` | Daily digest cron (8:00 UTC); sets `notified = true`. Requires `Authorization: Bearer CRON_SECRET`. |
 
