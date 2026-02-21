@@ -19,11 +19,15 @@ async function getListings(options?: { showRemovedFromSource?: boolean }): Promi
   unstable_noStore();
 
   const supabase = createServerClient();
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    process.env.NEXT_SUPABASE_URL?.trim() ||
+    process.env.SUPABASE_URL?.trim();
+  if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
     return {
       listings: [],
       error:
-        "Brak konfiguracji Supabase (NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_SERVICE_ROLE_KEY). Sprawdź .env.local i zmienne w Vercel.",
+        "Brak konfiguracji Supabase (ustaw NEXT_PUBLIC_SUPABASE_URL lub SUPABASE_URL oraz SUPABASE_SERVICE_ROLE_KEY w Vercel).",
     };
   }
 
@@ -156,6 +160,17 @@ export default async function DashboardPage(props: {
 
   const priceRange = getPriceRange(listings);
 
+  const deployId =
+    process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? process.env.VERCEL_COMMIT_SHA?.slice(0, 7) ?? "local";
+  const supabaseUrlStatus =
+    (process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+      process.env.NEXT_SUPABASE_URL?.trim() ||
+      process.env.SUPABASE_URL?.trim())
+      ? "ok"
+      : "missing";
+  const supabaseServiceKeyStatus = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ? "ok" : "missing";
+  const connectionOk = supabaseUrlStatus === "ok" && supabaseServiceKeyStatus === "ok";
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white">
@@ -185,6 +200,20 @@ export default async function DashboardPage(props: {
           priceRange={priceRange}
           showRemovedFromSource={showRemoved}
         />
+        <footer className="mt-12 border-t border-neutral-200 pt-4">
+          <p className="text-xs text-neutral-400" aria-label="Deploy and connection debug">
+            Deploy: <code className="rounded bg-neutral-100 px-1">{deployId}</code>
+            {" · "}
+            Supabase URL: <code className="rounded bg-neutral-100 px-1">{supabaseUrlStatus}</code>
+            {" · "}
+            Service key: <code className="rounded bg-neutral-100 px-1">{supabaseServiceKeyStatus}</code>
+            {!connectionOk && (
+              <span className="ml-2 text-amber-600">
+                — Ustaw SUPABASE_URL (lub NEXT_PUBLIC_SUPABASE_URL) i SUPABASE_SERVICE_ROLE_KEY w Vercel → Settings → Environment Variables, potem redeploy.
+              </span>
+            )}
+          </p>
+        </footer>
       </main>
     </div>
   );

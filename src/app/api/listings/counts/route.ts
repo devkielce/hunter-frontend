@@ -10,9 +10,13 @@ export type ListingCountsResponse = Record<string, number>;
  */
 export async function GET(): Promise<Response> {
   const supabase = createServerClient();
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    process.env.NEXT_SUPABASE_URL?.trim() ||
+    process.env.SUPABASE_URL?.trim();
+  if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
     return Response.json(
-      { error: "Supabase not configured" },
+      { error: "Supabase not configured (NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)" },
       { status: 500 }
     );
   }
