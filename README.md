@@ -25,6 +25,10 @@ Dashboard: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 - **Cron** – Vercel wywołuje `/api/cron/notify` raz dziennie (8:00 UTC). Endpoint wymaga nagłówka `Authorization: Bearer <CRON_SECRET>` i zwraca 401 bez niego. W Vercel ustaw `CRON_SECRET` w env i w Cron Job nagłówek `Authorization: Bearer <CRON_SECRET>`.
 - **On-demand run (przycisk „Odśwież oferty”)** – proxy do backendu `POST /api/run`. W Vercel ustaw `BACKEND_URL` (np. `https://twoja-aplikacja.up.railway.app`) i opcjonalnie `HUNTER_RUN_SECRET` (ten sam co w backendzie; nagłówek `X-Run-Secret`). Błędy są logowane w Vercel (Functions → Logs); bez `BACKEND_URL` przycisk pokaże komunikat konfiguracyjny.
 
+### Netlify: błąd „Secrets scanning detected secrets”
+
+Jeśli build na Netlify kończy się błędem skanowania secretów, Next.js wstawia klucz Supabase (anon) do bundla – Netlify traktuje go jak secret. Rozwiązanie: w Netlify → Environment variables ustaw **`SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES`** = wartość twojego klucza anon (JWT). Szczegóły: [docs/NETLIFY_SECRETS_SCAN.md](./docs/NETLIFY_SECRETS_SCAN.md).
+
 ### Test cron lokalnie
 
 ```bash

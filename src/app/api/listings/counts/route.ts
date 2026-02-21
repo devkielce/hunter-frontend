@@ -23,7 +23,8 @@ export async function GET(): Promise<Response> {
       const { count, error } = await supabase
         .from("listings")
         .select("*", { count: "exact", head: true })
-        .eq("source", source);
+        .eq("source", source)
+        .is("removed_from_source_at", null);
       if (error) {
         counts[source] = 0;
         return;

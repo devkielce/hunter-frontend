@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 import type { Listing, ListingStatus } from "@/types/listing";
 import { ListingCard } from "./ListingCard";
 import { ListingFilters, type FilterState } from "./ListingFilters";
@@ -8,6 +9,8 @@ import { ListingFilters, type FilterState } from "./ListingFilters";
 interface ListingDashboardProps {
   initialListings: Listing[];
   priceRange: { min: number; max: number };
+  /** When true, the list shows only listings removed from source (removed_from_source_at IS NOT NULL). */
+  showRemovedFromSource?: boolean;
 }
 
 const defaultFilters: FilterState = {
@@ -22,6 +25,7 @@ const defaultFilters: FilterState = {
 export function ListingDashboard({
   initialListings,
   priceRange,
+  showRemovedFromSource = false,
 }: ListingDashboardProps) {
   const [filters, setFilters] = useState<FilterState>({
     ...defaultFilters,
@@ -103,10 +107,28 @@ export function ListingDashboard({
         />
       </aside>
       <div>
-        <p className="text-sm text-neutral-500 mb-4">
-          Pokazano <strong>{filteredAndSorted.length}</strong> z{" "}
-          <strong>{listings.length}</strong> ofert
-        </p>
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-neutral-500">
+            Pokazano <strong>{filteredAndSorted.length}</strong> z{" "}
+            <strong>{listings.length}</strong> ofert
+            {showRemovedFromSource && " (usunięte ze źródła)"}
+          </p>
+          {showRemovedFromSource ? (
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
+            >
+              ← Pokaż tylko aktywne
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard?removed=1"
+              className="text-sm font-medium text-neutral-600 hover:text-neutral-800 hover:underline"
+            >
+              Pokaż usunięte ze źródła
+            </Link>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredAndSorted.map((listing) => (
             <ListingCard

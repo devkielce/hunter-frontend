@@ -18,14 +18,19 @@ CREATE TABLE IF NOT EXISTS public.listings (
   raw_data JSONB DEFAULT '{}',
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'viewed', 'archived')),
   notified BOOLEAN NOT NULL DEFAULT false,
+  removed_from_source_at TIMESTAMPTZ DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- For existing DBs: add column if backend has already added it or run this manually
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS removed_from_source_at TIMESTAMPTZ DEFAULT NULL;
 
 CREATE INDEX IF NOT EXISTS listings_source_url_idx ON public.listings (source_url);
 CREATE INDEX IF NOT EXISTS listings_created_at_idx ON public.listings (created_at DESC);
 CREATE INDEX IF NOT EXISTS listings_source_idx ON public.listings (source);
 CREATE INDEX IF NOT EXISTS listings_notified_idx ON public.listings (notified) WHERE notified = false;
+CREATE INDEX IF NOT EXISTS listings_removed_from_source_at_idx ON public.listings (removed_from_source_at) WHERE removed_from_source_at IS NOT NULL;
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$

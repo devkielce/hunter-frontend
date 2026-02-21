@@ -23,6 +23,8 @@ export interface Listing {
   created_at: string | null;
   updated_at: string | null;
   notified: boolean;
+  /** When set, listing was removed from the source (e.g. auction ended); hide from default view. */
+  removed_from_source_at?: string | null;
 }
 
 export const LISTING_STATUSES: { value: ListingStatus; label: string }[] = [

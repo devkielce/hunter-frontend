@@ -15,7 +15,7 @@ type GetListingsResult = {
   error: string | null;
 };
 
-async function getListings(): Promise<GetListingsResult> {
+async function getListings(options?: { showRemovedFromSource?: boolean }): Promise<GetListingsResult> {
   unstable_noStore();
 
   const supabase = createServerClient();
@@ -27,16 +27,23 @@ async function getListings(): Promise<GetListingsResult> {
     };
   }
 
+  const showRemoved = options?.showRemovedFromSource === true;
   const results = await Promise.allSettled(
-    LISTING_SOURCES.map((source) =>
-      supabase
+    LISTING_SOURCES.map((source) => {
+      let q = supabase
         .from("listings")
         .select("*")
         .eq("source", source)
         .order("created_at", { ascending: false })
         .order("id", { ascending: false })
-        .limit(2000)
-    )
+        .limit(2000);
+      if (showRemoved) {
+        q = q.not("removed_from_source_at", "is", null);
+      } else {
+        q = q.is("removed_from_source_at", null);
+      }
+      return q;
+    })
   );
 
   const allRows: Record<string, unknown>[] = [];
@@ -114,6 +121,8 @@ function normalizeListing(row: Record<string, unknown>): Listing {
     created_at: created,
     updated_at: updated,
     notified: Boolean(row.notified),
+    removed_from_source_at:
+      row.removed_from_source_at != null ? String(row.removed_from_source_at).trim() : null,
   };
 }
 
@@ -128,12 +137,16 @@ function getPriceRange(listings: Listing[]): { min: number; max: number } {
   };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: {
+  searchParams?: Promise<{ removed?: string }>;
+}) {
   let listings: Listing[] = [];
   let fetchError: string | null = null;
+  const searchParams = (await props.searchParams) ?? {};
+  const showRemoved = searchParams.removed === "1";
 
   try {
-    const result = await getListings();
+    const result = await getListings({ showRemovedFromSource: showRemoved });
     listings = result.listings ?? [];
     fetchError = result.error;
   } catch (e) {
@@ -170,6 +183,7 @@ export default async function DashboardPage() {
         <ListingDashboard
           initialListings={listings}
           priceRange={priceRange}
+          showRemovedFromSource={showRemoved}
         />
       </main>
     </div>
