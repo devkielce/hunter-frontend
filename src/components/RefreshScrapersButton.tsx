@@ -5,6 +5,29 @@ import { useRouter } from "next/navigation";
 
 const POLL_INTERVAL_MS = 2500;
 
+type RunResultItem = { source: string; listings_upserted?: number };
+
+/** Run status API response shape (GET /api/run/status). */
+type RunStatusResponse = {
+  status: string;
+  results?: RunResultItem[];
+  error?: string;
+};
+
+function formatResultsMessage(results: RunResultItem[]): string {
+  if (!results?.length) return "Scrapery zakończone.";
+  return `Zaktualizowano: ${results.map((r) => `${r.source} (${r.listings_upserted ?? 0})`).join(", ")}`;
+}
+
+/** Narrow API results to RunResultItem[] (runtime-safe). */
+function getRunResults(raw: unknown): RunResultItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (item): item is RunResultItem =>
+      item != null && typeof item === "object" && "source" in item && typeof (item as RunResultItem).source === "string"
+  ) as RunResultItem[];
+}
+
 export function RefreshScrapersButton() {
   const router = useRouter();
   const [refetchLoading, setRefetchLoading] = useState(false);
@@ -65,9 +88,7 @@ export function RefreshScrapersButton() {
         if (final.status === "completed") {
           setMessage({
             type: "ok",
-            text: final.results?.length
-              ? `Zaktualizowano: ${final.results.map((r: { source: string; listings_upserted?: number }) => `${r.source} (${r.listings_upserted ?? 0})`).join(", ")}`
-              : "Scrapery zakończone.",
+            text: formatResultsMessage(getRunResults(final.results)),
           });
           await router.refresh();
         } else if (final.status === "error") {
@@ -84,14 +105,10 @@ export function RefreshScrapersButton() {
       }
 
       // 200 with results (sync run)
-      if (data.results?.length) {
-        setMessage({
-          type: "ok",
-          text: `Zaktualizowano: ${data.results.map((r: { source: string; listings_upserted?: number }) => `${r.source} (${r.listings_upserted ?? 0})`).join(", ")}`,
-        });
-      } else {
-        setMessage({ type: "ok", text: "Scrapery zakończone." });
-      }
+      setMessage({
+        type: "ok",
+        text: formatResultsMessage(getRunResults(data.results)),
+      });
       await router.refresh();
     } catch (err) {
       setMessage({
@@ -103,23 +120,19 @@ export function RefreshScrapersButton() {
     }
   };
 
-  async function pollRunStatus(): Promise<{
-    status: string;
-    results?: unknown[];
-    error?: string;
-  }> {
+  async function pollRunStatus(): Promise<RunStatusResponse> {
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
         try {
           const res = await fetch("/api/run/status");
-          const data = await res.json().catch(() => ({}));
-          const status = data.status as string | undefined;
+          const data = (await res.json().catch(() => ({}))) as RunStatusResponse;
+          const status = data.status;
           if (status === "completed" || status === "error" || status === "idle") {
             clearInterval(interval);
             resolve({
               status: status ?? "idle",
-              results: data.results as unknown[] | undefined,
-              error: data.error as string | undefined,
+              results: getRunResults(data.results),
+              error: data.error,
             });
           }
         } catch {
