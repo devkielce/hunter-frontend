@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
 
-const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as const;
+const LISTING_SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook", "amw"] as const;
 
 type GetListingsResult = {
   listings: Listing[];

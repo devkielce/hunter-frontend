@@ -1,6 +1,6 @@
 import { createServerClient } from "@/lib/supabase-server";
 
-const SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook"] as const;
+const SOURCES = ["komornik", "e_licytacje", "elicytacje", "facebook", "amw"] as const;
 
 export type ListingCountsResponse = Record<string, number>;
 

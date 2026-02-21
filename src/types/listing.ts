@@ -42,6 +42,7 @@ export const SOURCE_CONFIG: Record<
   komornik: { label: "Komornik", color: "bg-amber-600", icon: "⚖️" },
   e_licytacje: { label: "e-Licytacje", color: "bg-emerald-600", icon: "🔨" },
   elicytacje: { label: "e-Licytacje", color: "bg-emerald-600", icon: "🔨" },
+  amw: { label: "AMW (Nieruchomości)", color: "bg-slate-700", icon: "🏛️" },
   olx: { label: "OLX", color: "bg-green-600", icon: "🟢" },
   otodom: { label: "Otodom", color: "bg-orange-600", icon: "🏠" },
   gratka: { label: "Gratka", color: "bg-rose-600", icon: "📋" },
