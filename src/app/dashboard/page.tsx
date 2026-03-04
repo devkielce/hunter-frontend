@@ -127,6 +127,14 @@ function normalizeListing(row: Record<string, unknown>): Listing {
     notified: Boolean(row.notified),
     removed_from_source_at:
       row.removed_from_source_at != null ? String(row.removed_from_source_at).trim() : null,
+    surface_m2: (() => {
+      if (row.surface_m2 != null && !Number.isNaN(Number(row.surface_m2)))
+        return Number(row.surface_m2);
+      const raw = row.raw_data as { surface_m2?: number } | undefined;
+      if (raw?.surface_m2 != null && !Number.isNaN(Number(raw.surface_m2)))
+        return Number(raw.surface_m2);
+      return null;
+    })(),
   };
 }
 

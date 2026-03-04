@@ -25,6 +25,8 @@ export interface Listing {
   notified: boolean;
   /** When set, listing was removed from the source (e.g. auction ended); hide from default view. */
   removed_from_source_at?: string | null;
+  /** Powierzchnia użytkowa w m² (z backendu lub raw_data). */
+  surface_m2?: number | null;
 }
 
 export const LISTING_STATUSES: { value: ListingStatus; label: string }[] = [
