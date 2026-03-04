@@ -12,14 +12,12 @@ interface ListingCardProps {
 }
 
 function formatPrice(pricePln: number | null): string {
-  if (pricePln == null) return "Cena do ustalenia";
+  if (pricePln == null) return "Do ustalenia";
   const zl = Math.floor(pricePln / 100);
-  const s = String(zl);
-  const withSpaces = s.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return withSpaces + " zł";
+  const s = String(zl).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return s + " zł";
 }
 
-/** Cena za m² (gdy mamy cenę i metraż). */
 function formatPricePerSqm(pricePln: number | null, surfaceM2: number | null): string | null {
   if (pricePln == null || surfaceM2 == null || surfaceM2 <= 0) return null;
   const zlPerSqm = Math.round(pricePln / 100 / surfaceM2);
@@ -43,10 +41,14 @@ function formatDate(value: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
   const pad = (n: number) => String(n).padStart(2, "0");
-  const day = d.getDate();
-  const month = d.getMonth() + 1;
-  const year = d.getFullYear();
-  return `${pad(day)}.${pad(month)}.${year}`;
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+function formatDateTime(value: string): string {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 const MapPin = () => (
@@ -62,7 +64,7 @@ const Calendar = () => (
   </svg>
 );
 
-/** Karta oferty w stylu Hunter design system: zdjęcie, cena (font-display), cena/m², metraż, lokalizacja (ikona), data/countdown, Zobacz, statusy. */
+/** Karta oferty w stylu Adradar: poziomy wiersz (zdjęcie | treść | cena). */
 export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
   const mounted = useMounted();
   const sourceConfig = getSourceConfig(listing.source);
@@ -78,45 +80,42 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
     listing.auction_date &&
     String(listing.auction_date).trim() !== "" &&
     !Number.isNaN(new Date(listing.auction_date).getTime());
+  const isNew = isNewToday(listing.created_at);
 
   return (
-    <article className="hunter-card flex flex-col animate-fade-in">
-      {/* Źródło + NOWE */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-[hsl(var(--card-border))]">
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass}`}
-        >
-          {sourceConfig.icon} {sourceConfig.label}
-        </span>
-        {mounted && isNewToday(listing.created_at) && (
-          <span className="rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-xs font-medium">
-            NOWE (dzisiaj)
-          </span>
-        )}
-      </div>
-
-      {/* Zdjęcie */}
-      <div className="relative aspect-[16/10] w-full bg-[hsl(var(--card-border))]">
+    <article className="hunter-card-row flex flex-col md:flex-row animate-fade-in min-h-0">
+      {/* LEFT: Image + badges overlay */}
+      <div className="listing-image-row relative w-full md:w-52 md:min-w-[13rem] aspect-[16/10] md:aspect-auto md:self-stretch shrink-0">
         {firstImage ? (
           <Image
             src={firstImage}
             alt=""
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            sizes="(max-width: 768px) 100vw, 208px"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/50">
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/50 bg-[hsl(var(--card-border))]">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
         )}
+        <span
+          className={`absolute top-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass}`}
+        >
+          {sourceConfig.icon} {sourceConfig.label}
+        </span>
+        {mounted && isNew && (
+          <span className="absolute top-2 right-2 rounded-full bg-emerald-500/90 text-white px-2 py-0.5 text-xs font-medium">
+            NOWE
+          </span>
+        )}
       </div>
 
-      {/* Treść: tytuł, CENA (display font), cena/m², metraż, lokalizacja, data, Zobacz, statusy */}
-      <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <h2 className="font-medium text-foreground line-clamp-2 text-sm">
+      {/* MIDDLE: Title, description, location, date, link */}
+      <div className="flex-1 p-4 min-w-0 flex flex-col">
+        <h2 className="font-medium text-foreground line-clamp-2 text-sm mb-1">
           <a
             href={listing.source_url}
             target="_blank"
@@ -127,54 +126,72 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           </a>
         </h2>
 
-        <p className="font-display text-xl font-bold text-foreground">
-          {formatPrice(listing.price_pln)}
-        </p>
-
-        {pricePerSqm != null && (
-          <p className="text-sm text-muted-foreground">{pricePerSqm}</p>
-        )}
-
-        {listing.surface_m2 != null && listing.surface_m2 > 0 && (
-          <p className="text-sm text-muted-foreground">
-            {Number(listing.surface_m2) === Math.floor(listing.surface_m2)
-              ? `${listing.surface_m2} m²`
-              : `${Number(listing.surface_m2).toFixed(1).replace(".", ",")} m²`}
+        {listing.description && (
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
+            {listing.description}
           </p>
         )}
 
-        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-          <MapPin />
-          <span>{locationLine}</span>
-        </p>
+        {(listing.city || listing.location) && (
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-2">
+            <MapPin />
+            <span>{locationLine}</span>
+          </p>
+        )}
 
-        {/* Data / licytacja */}
-        {displayDate && (
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5" suppressHydrationWarning>
+        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5" suppressHydrationWarning>
             <Calendar />
             {!mounted ? (
               "—"
             ) : isAuction ? (
               <>
-                Licytacja: <Countdown auctionDate={listing.auction_date!} />
+                Licytacja: {formatDateTime(listing.auction_date!)}
+                {" "}
+                ({<Countdown auctionDate={listing.auction_date!} />})
               </>
             ) : (
-              <>Dodano: {formatDate(displayDate)}</>
+              <>Dodano: {displayDate ? formatDate(displayDate) : "—"}</>
             )}
+          </span>
+          <a
+            href={listing.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            Szczegóły
+          </a>
+        </div>
+      </div>
+
+      {/* RIGHT: Price, surface, term, status buttons */}
+      <div className="w-full md:w-56 md:min-w-[14rem] shrink-0 border-t md:border-t-0 md:border-l border-[hsl(var(--card-border))] p-4 flex flex-col gap-2">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-0.5">Cena wywoławcza:</p>
+          <p className="font-display text-lg font-bold text-foreground">
+            {formatPrice(listing.price_pln)}
+          </p>
+          {pricePerSqm != null && (
+            <p className="text-sm text-muted-foreground">{pricePerSqm}</p>
+          )}
+        </div>
+
+        {listing.surface_m2 != null && listing.surface_m2 > 0 && (
+          <span className="inline-flex w-fit rounded border border-[hsl(var(--card-border))] px-2 py-1 text-sm text-foreground">
+            {Number(listing.surface_m2) === Math.floor(listing.surface_m2)
+              ? `${listing.surface_m2} m²`
+              : `${Number(listing.surface_m2).toFixed(1).replace(".", ",")} m²`}
+          </span>
+        )}
+
+        {listing.auction_date && isAuction && (
+          <p className="text-xs text-muted-foreground">
+            Termin: {formatDate(listing.auction_date)}
           </p>
         )}
 
-        <a
-          href={listing.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hunter-btn-primary inline-flex items-center justify-center mt-2 text-sm"
-        >
-          Zobacz
-        </a>
-
-        {/* Statusy */}
-        <div className="mt-3 pt-3 border-t border-[hsl(var(--card-border))] flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
           {LISTING_STATUSES.map(({ value, label }) => {
             const active = (listing.status ?? "new") === value;
             return (

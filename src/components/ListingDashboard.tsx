@@ -96,40 +96,40 @@ export function ListingDashboard({
   }, []);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-      <aside className="lg:sticky lg:top-4 lg:self-start">
-        <ListingFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          sources={sources}
-          cities={cities}
-          priceRange={priceRange}
-        />
-      </aside>
-      <div>
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm text-muted-foreground">
-            Pokazano <strong className="text-foreground">{filteredAndSorted.length}</strong> z{" "}
-            <strong className="text-foreground">{listings.length}</strong> ofert
-            {showRemovedFromSource && " (usunięte ze źródła)"}
-          </p>
-          {showRemovedFromSource ? (
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-accent hover:underline"
-            >
-              ← Pokaż tylko aktywne
-            </Link>
-          ) : (
-            <Link
-              href="/dashboard?removed=1"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
-            >
-              Pokaż usunięte ze źródła
-            </Link>
-          )}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="flex flex-col gap-4">
+      <ListingFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        sources={sources}
+        cities={cities}
+        priceRange={priceRange}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm text-muted-foreground">
+          Pokazano <strong className="text-foreground">{filteredAndSorted.length}</strong> z{" "}
+          <strong className="text-foreground">{listings.length}</strong> ofert
+          {showRemovedFromSource && " (usunięte ze źródła)"}
+        </p>
+        {showRemovedFromSource ? (
+          <Link
+            href="/dashboard"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            ← Pokaż tylko aktywne
+          </Link>
+        ) : (
+          <Link
+            href="/dashboard?removed=1"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
+          >
+            Pokaż usunięte ze źródła
+          </Link>
+        )}
+      </div>
+
+      {filteredAndSorted.length > 0 ? (
+        <div className="flex flex-col gap-3">
           {filteredAndSorted.map((listing) => (
             <ListingCard
               key={listing.id}
@@ -138,12 +138,11 @@ export function ListingDashboard({
             />
           ))}
         </div>
-        {filteredAndSorted.length === 0 && (
-          <p className="text-center text-muted-foreground py-12">
-            Brak ofert spełniających kryteria.
-          </p>
-        )}
-      </div>
+      ) : (
+        <p className="text-center text-muted-foreground py-12">
+          Brak ofert spełniających kryteria.
+        </p>
+      )}
     </div>
   );
 }

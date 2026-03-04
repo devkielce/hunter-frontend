@@ -101,6 +101,46 @@ body {
     color: hsl(var(--foreground));
   }
 
+  /* Adradar-style: horizontal filter bar */
+  .hunter-filter-bar {
+    background: hsl(var(--card-bg));
+    border: 1px solid hsl(var(--card-border));
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+  }
+
+  /* Adradar-style: horizontal listing row */
+  .hunter-card-row {
+    background: hsl(var(--card-bg));
+    border: 1px solid hsl(var(--card-border));
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+  .hunter-card-row:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+  }
+
+  .listing-image-row {
+    width: 13rem;
+    min-width: 13rem;
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--card-border));
+  }
+  .listing-image-row img,
+  .listing-image-row [data-listing-image] {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.2s ease;
+  }
+  .hunter-card-row:hover .listing-image-row img,
+  .hunter-card-row:hover .listing-image-row [data-listing-image] {
+    transform: scale(1.05);
+  }
+
   .hunter-btn-primary {
     background: hsl(var(--accent));
     color: hsl(var(--accent-foreground));

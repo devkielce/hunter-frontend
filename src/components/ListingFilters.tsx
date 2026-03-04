@@ -20,6 +20,14 @@ interface ListingFiltersProps {
   priceRange: { min: number; max: number };
 }
 
+function formatPriceGrosze(grosze: number): string {
+  const zl = Math.floor(grosze / 100);
+  return String(zl).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " zł";
+}
+
+const selectClass =
+  "min-w-[140px] h-9 rounded-md border border-[hsl(var(--card-border))] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50";
+
 export function ListingFilters({
   filters,
   onFiltersChange,
@@ -31,70 +39,78 @@ export function ListingFilters({
     onFiltersChange({ ...filters, ...patch });
   };
 
-  const inputClass =
-    "w-full rounded-md border border-[hsl(var(--card-border))] bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50";
-
   return (
-    <aside className="hunter-filter-panel space-y-4">
-      <h3 className="font-display font-semibold text-foreground">Filtry</h3>
+    <div className="hunter-filter-bar">
+      {/* Row of selects */}
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Źródło</label>
+          <select
+            value={filters.source}
+            onChange={(e) => update({ source: e.target.value as ListingSource | "" })}
+            className={selectClass}
+          >
+            <option value="">- WSZYSTKIE -</option>
+            {sources.map((s) => (
+              <option key={s} value={s}>
+                {getSourceConfig(s).label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Źródło
-        </label>
-        <select
-          value={filters.source}
-          onChange={(e) => update({ source: e.target.value as ListingSource | "" })}
-          className={inputClass}
-        >
-          <option value="">Wszystkie</option>
-          {sources.map((s) => (
-            <option key={s} value={s}>
-              {getSourceConfig(s).label}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Status</label>
+          <select
+            value={filters.status}
+            onChange={(e) => update({ status: e.target.value as ListingStatus | "" })}
+            className={selectClass}
+          >
+            <option value="">- WSZYSTKIE -</option>
+            {LISTING_STATUSES.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Miasto</label>
+          <select
+            value={filters.city}
+            onChange={(e) => update({ city: e.target.value })}
+            className={selectClass}
+          >
+            <option value="">- WSZYSTKIE -</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Sortowanie</label>
+          <select
+            value={filters.sortByPrice}
+            onChange={(e) =>
+              update({ sortByPrice: e.target.value as "asc" | "desc" | "" })
+            }
+            className={selectClass}
+          >
+            <option value="">Domyślne (data)</option>
+            <option value="asc">Cena: rosnąco</option>
+            <option value="desc">Cena: malejąco</option>
+          </select>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Status
-        </label>
-        <select
-          value={filters.status}
-          onChange={(e) => update({ status: e.target.value as ListingStatus | "" })}
-          className={inputClass}
-        >
-          <option value="">Wszystkie</option>
-          {LISTING_STATUSES.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Miasto
-        </label>
-        <select
-          value={filters.city}
-          onChange={(e) => update({ city: e.target.value })}
-          className={inputClass}
-        >
-          <option value="">Wszystkie</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Cena (PLN): {filters.priceMin / 100} – {filters.priceMax / 100}
+      {/* Price range — separate row */}
+      <div className="mt-3 pt-3 border-t border-[hsl(var(--card-border))] w-full max-w-md">
+        <label className="text-xs font-medium text-muted-foreground block mb-1">
+          Cena (PLN)
         </label>
         <div className="flex gap-2 items-center">
           <input
@@ -126,26 +142,10 @@ export function ListingFilters({
             className="flex-1 h-2 rounded-full appearance-none bg-[hsl(var(--card-border))] accent-accent"
           />
         </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {formatPriceGrosze(filters.priceMin)} – {formatPriceGrosze(filters.priceMax)}
+        </p>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Sortowanie po cenie
-        </label>
-        <select
-          value={filters.sortByPrice}
-          onChange={(e) =>
-            update({
-              sortByPrice: e.target.value as "asc" | "desc" | "",
-            })
-          }
-          className={inputClass}
-        >
-          <option value="">Domyślne (data)</option>
-          <option value="asc">Cena: rosnąco</option>
-          <option value="desc">Cena: malejąco</option>
-        </select>
-      </div>
-    </aside>
+    </div>
   );
 }
