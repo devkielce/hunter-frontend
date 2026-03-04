@@ -1,7 +1,7 @@
 import { unstable_noStore } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
+import { Header } from "@/components/Header";
 import { ListingDashboard } from "@/components/ListingDashboard";
-import { RefreshScrapersButton } from "@/components/RefreshScrapersButtonDynamic";
 import type { Listing } from "@/types/listing";
 
 export const dynamic = "force-dynamic";
@@ -180,24 +180,12 @@ export default async function DashboardPage(props: {
   const connectionOk = supabaseUrlStatus === "ok" && supabaseServiceKeyStatus === "ok";
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div>
-            <h1 className="text-xl font-bold text-neutral-900">
-              Hunter – Okazje nieruchomościowe
-            </h1>
-            <p className="text-sm text-neutral-500">
-              Lista ofert z komornika, e-licytacji i Facebooka
-            </p>
-          </div>
-          <RefreshScrapersButton />
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Header />
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {fetchError && (
           <div
-            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200"
             role="alert"
           >
             <strong>Błąd połączenia z bazą:</strong> {fetchError}
@@ -208,15 +196,15 @@ export default async function DashboardPage(props: {
           priceRange={priceRange}
           showRemovedFromSource={showRemoved}
         />
-        <footer className="mt-12 border-t border-neutral-200 pt-4">
-          <p className="text-xs text-neutral-400" aria-label="Deploy and connection debug">
-            Deploy: <code className="rounded bg-neutral-100 px-1">{deployId}</code>
+        <footer className="mt-12 border-t border-card-border pt-4">
+          <p className="text-xs text-muted-foreground" aria-label="Deploy and connection debug">
+            Deploy: <code className="rounded bg-card-border/50 px-1">{deployId}</code>
             {" · "}
-            Supabase URL: <code className="rounded bg-neutral-100 px-1">{supabaseUrlStatus}</code>
+            Supabase URL: <code className="rounded bg-card-border/50 px-1">{supabaseUrlStatus}</code>
             {" · "}
-            Service key: <code className="rounded bg-neutral-100 px-1">{supabaseServiceKeyStatus}</code>
+            Service key: <code className="rounded bg-card-border/50 px-1">{supabaseServiceKeyStatus}</code>
             {!connectionOk && (
-              <span className="ml-2 text-amber-600">
+              <span className="ml-2 text-amber-600 dark:text-amber-400">
                 — Ustaw SUPABASE_URL (lub NEXT_PUBLIC_SUPABASE_URL) i SUPABASE_SERVICE_ROLE_KEY w Vercel → Settings → Environment Variables, potem redeploy.
               </span>
             )}

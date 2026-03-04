@@ -108,28 +108,28 @@ export function ListingDashboard({
       </aside>
       <div>
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm text-neutral-500">
-            Pokazano <strong>{filteredAndSorted.length}</strong> z{" "}
-            <strong>{listings.length}</strong> ofert
+          <p className="text-sm text-muted-foreground">
+            Pokazano <strong className="text-foreground">{filteredAndSorted.length}</strong> z{" "}
+            <strong className="text-foreground">{listings.length}</strong> ofert
             {showRemovedFromSource && " (usunięte ze źródła)"}
           </p>
           {showRemovedFromSource ? (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
+              className="text-sm font-medium text-accent hover:underline"
             >
               ← Pokaż tylko aktywne
             </Link>
           ) : (
             <Link
               href="/dashboard?removed=1"
-              className="text-sm font-medium text-neutral-600 hover:text-neutral-800 hover:underline"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
             >
               Pokaż usunięte ze źródła
             </Link>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredAndSorted.map((listing) => (
             <ListingCard
               key={listing.id}
@@ -139,7 +139,7 @@ export function ListingDashboard({
           ))}
         </div>
         {filteredAndSorted.length === 0 && (
-          <p className="text-center text-neutral-500 py-12">
+          <p className="text-center text-muted-foreground py-12">
             Brak ofert spełniających kryteria.
           </p>
         )}

@@ -59,3 +59,16 @@ export function getSourceConfig(source: string) {
     }
   );
 }
+
+/** CSS class for Hunter design system source badge (e.g. source-badge-komornik). */
+const SOURCE_BADGE_CLASSES: Record<string, string> = {
+  komornik: "source-badge-komornik",
+  e_licytacje: "source-badge-e_licytacje",
+  elicytacje: "source-badge-elicytacje",
+  facebook: "source-badge-facebook",
+  amw: "source-badge-amw",
+};
+
+export function getSourceBadgeClass(source: string): string {
+  return SOURCE_BADGE_CLASSES[source] ?? "source-badge-default";
+}

@@ -22,12 +22,12 @@ export function RefreshScrapersButton() {
         type="button"
         onClick={handleRefetch}
         disabled={refetchLoading}
-        className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 disabled:opacity-50"
+        className="hunter-btn-primary inline-flex items-center gap-2 disabled:opacity-50"
         aria-label="Odśwież listę ofert z bazy"
       >
         {refetchLoading ? (
           <>
-            <span className="size-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
+            <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             Odświeżam…
           </>
         ) : (
@@ -41,7 +41,7 @@ export function RefreshScrapersButton() {
       </button>
       {message && (
         <p
-          className={`text-xs ${message.type === "ok" ? "text-green-600" : "text-red-600"}`}
+          className={`text-xs ${message.type === "ok" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
           role="status"
         >
           {message.text}

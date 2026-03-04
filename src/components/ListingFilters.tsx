@@ -31,18 +31,21 @@ export function ListingFilters({
     onFiltersChange({ ...filters, ...patch });
   };
 
+  const inputClass =
+    "w-full rounded-md border border-[hsl(var(--card-border))] bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50";
+
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm space-y-4">
-      <h3 className="font-semibold text-neutral-900">Filtry</h3>
+    <aside className="hunter-filter-panel space-y-4">
+      <h3 className="font-display font-semibold text-foreground">Filtry</h3>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-600 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Źródło
         </label>
         <select
           value={filters.source}
           onChange={(e) => update({ source: e.target.value as ListingSource | "" })}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="">Wszystkie</option>
           {sources.map((s) => (
@@ -54,13 +57,13 @@ export function ListingFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-600 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Status
         </label>
         <select
           value={filters.status}
           onChange={(e) => update({ status: e.target.value as ListingStatus | "" })}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="">Wszystkie</option>
           {LISTING_STATUSES.map(({ value, label }) => (
@@ -72,13 +75,13 @@ export function ListingFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-600 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Miasto
         </label>
         <select
           value={filters.city}
           onChange={(e) => update({ city: e.target.value })}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="">Wszystkie</option>
           {cities.map((c) => (
@@ -90,7 +93,7 @@ export function ListingFilters({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-600 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Cena (PLN): {filters.priceMin / 100} – {filters.priceMax / 100}
         </label>
         <div className="flex gap-2 items-center">
@@ -106,7 +109,7 @@ export function ListingFilters({
                 priceMax: Math.max(Number(e.target.value), filters.priceMax),
               })
             }
-            className="flex-1"
+            className="flex-1 h-2 rounded-full appearance-none bg-[hsl(var(--card-border))] accent-accent"
           />
           <input
             type="range"
@@ -120,13 +123,13 @@ export function ListingFilters({
                 priceMin: Math.min(Number(e.target.value), filters.priceMin),
               })
             }
-            className="flex-1"
+            className="flex-1 h-2 rounded-full appearance-none bg-[hsl(var(--card-border))] accent-accent"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-600 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Sortowanie po cenie
         </label>
         <select
@@ -136,13 +139,13 @@ export function ListingFilters({
               sortByPrice: e.target.value as "asc" | "desc" | "",
             })
           }
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="">Domyślne (data)</option>
           <option value="asc">Cena: rosnąco</option>
           <option value="desc">Cena: malejąco</option>
         </select>
       </div>
-    </div>
+    </aside>
   );
 }
