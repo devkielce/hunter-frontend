@@ -7,9 +7,14 @@ export interface FilterState {
   source: ListingSource | "";
   status: ListingStatus | "";
   city: string;
+  region: string;
   priceMin: number;
   priceMax: number;
   sortByPrice: "asc" | "desc" | "";
+  /** Sort by investment_score descending. */
+  sortByScore: "" | "desc";
+  /** Min investment_score (0 = no filter). */
+  minScore: number;
 }
 
 interface ListingFiltersProps {
@@ -17,6 +22,7 @@ interface ListingFiltersProps {
   onFiltersChange: (f: FilterState) => void;
   sources: string[];
   cities: string[];
+  regions: string[];
   priceRange: { min: number; max: number };
 }
 
@@ -28,11 +34,14 @@ function formatPriceGrosze(grosze: number): string {
 const selectClass =
   "min-w-[140px] h-9 rounded-md border border-[hsl(var(--card-border))] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50";
 
+const MIN_SCORE_OPTIONS = [0, 50, 70, 80] as const;
+
 export function ListingFilters({
   filters,
   onFiltersChange,
   sources,
   cities,
+  regions,
   priceRange,
 }: ListingFiltersProps) {
   const update = (patch: Partial<FilterState>) => {
@@ -92,17 +101,55 @@ export function ListingFilters({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Sortowanie</label>
+          <label className="text-xs font-medium text-muted-foreground">Województwo</label>
           <select
-            value={filters.sortByPrice}
-            onChange={(e) =>
-              update({ sortByPrice: e.target.value as "asc" | "desc" | "" })
-            }
+            value={filters.region}
+            onChange={(e) => update({ region: e.target.value })}
             className={selectClass}
           >
-            <option value="">Domyślne (data)</option>
+            <option value="">- WSZYSTKIE -</option>
+            {regions.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Sortowanie</label>
+          <select
+            value={filters.sortByScore ? "score_desc" : filters.sortByPrice || "default"}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "score_desc") {
+                update({ sortByScore: "desc", sortByPrice: "" });
+              } else {
+                update({ sortByScore: "", sortByPrice: (v === "asc" ? "asc" : v === "desc" ? "desc" : "") as "asc" | "desc" | "" });
+              }
+            }}
+            className={selectClass}
+          >
+            <option value="default">Domyślne (data)</option>
             <option value="asc">Cena: rosnąco</option>
             <option value="desc">Cena: malejąco</option>
+            <option value="score_desc">Potencjał inwest.: malejąco</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Min. potencjał</label>
+          <select
+            value={filters.minScore}
+            onChange={(e) => update({ minScore: Number(e.target.value) })}
+            className={selectClass}
+          >
+            <option value={0}>Wszystkie</option>
+            {MIN_SCORE_OPTIONS.filter((s) => s > 0).map((s) => (
+              <option key={s} value={s}>
+                ≥ {s}
+              </option>
+            ))}
           </select>
         </div>
       </div>

@@ -17,9 +17,12 @@ const defaultFilters: FilterState = {
   source: "",
   status: "",
   city: "",
+  region: "",
   priceMin: 0,
-  priceMax: 500_000_00, // 5M PLN w groszach – nadpisane przez priceRange
+  priceMax: 500_000_00,
   sortByPrice: "",
+  sortByScore: "",
+  minScore: 0,
 };
 
 export function ListingDashboard({
@@ -60,6 +63,15 @@ export function ListingDashboard({
       ).sort(),
     [listings]
   );
+  const regions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          listings.map((l) => l.region).filter((r): r is string => Boolean(r))
+        )
+      ).sort(),
+    [listings]
+  );
 
   const filteredAndSorted = useMemo(() => {
     let result = listings.filter((l) => {
@@ -67,11 +79,22 @@ export function ListingDashboard({
       const status = l.status ?? "new";
       if (filters.status && status !== filters.status) return false;
       if (filters.city && l.city !== filters.city) return false;
+      if (filters.region && l.region !== filters.region) return false;
       const price = l.price_pln ?? 0;
       if (price < filters.priceMin || price > filters.priceMax) return false;
+      if (filters.minScore > 0) {
+        const score = l.investment_score ?? 0;
+        if (score < filters.minScore) return false;
+      }
       return true;
     });
-    if (filters.sortByPrice === "asc") {
+    if (filters.sortByScore === "desc") {
+      result = [...result].sort((a, b) => {
+        const sa = a.investment_score ?? -1;
+        const sb = b.investment_score ?? -1;
+        return sb - sa;
+      });
+    } else if (filters.sortByPrice === "asc") {
       result = [...result].sort(
         (a, b) => (a.price_pln ?? 0) - (b.price_pln ?? 0)
       );
@@ -102,6 +125,7 @@ export function ListingDashboard({
         onFiltersChange={setFilters}
         sources={sources}
         cities={cities}
+        regions={regions}
         priceRange={priceRange}
       />
 

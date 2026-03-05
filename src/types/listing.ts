@@ -27,6 +27,8 @@ export interface Listing {
   removed_from_source_at?: string | null;
   /** Powierzchnia użytkowa w m² (z backendu lub raw_data). */
   surface_m2?: number | null;
+  /** Potencjał inwestycyjny 0–100 (z raw_data.investment_score). */
+  investment_score?: number | null;
 }
 
 export const LISTING_STATUSES: { value: ListingStatus; label: string }[] = [

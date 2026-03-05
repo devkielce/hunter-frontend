@@ -135,6 +135,14 @@ function normalizeListing(row: Record<string, unknown>): Listing {
         return Number(raw.surface_m2);
       return null;
     })(),
+    investment_score: (() => {
+      const raw = row.raw_data as { investment_score?: number } | undefined;
+      if (raw?.investment_score != null && !Number.isNaN(Number(raw.investment_score))) {
+        const n = Number(raw.investment_score);
+        if (n >= 0 && n <= 100) return n;
+      }
+      return null;
+    })(),
   };
 }
 

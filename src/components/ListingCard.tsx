@@ -191,6 +191,12 @@ export function ListingCard({ listing, onStatusChange }: ListingCardProps) {
           </p>
         )}
 
+        {listing.investment_score != null && listing.investment_score >= 0 && listing.investment_score <= 100 && (
+          <p className="text-xs text-muted-foreground">
+            Potencjał inwest.: <span className="font-medium text-foreground">{listing.investment_score}</span>/100
+          </p>
+        )}
+
         <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
           {LISTING_STATUSES.map(({ value, label }) => {
             const active = (listing.status ?? "new") === value;
