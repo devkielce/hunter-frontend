@@ -29,6 +29,8 @@ export interface Listing {
   surface_m2?: number | null;
   /** Potencjał inwestycyjny 0–100 (z raw_data.investment_score). */
   investment_score?: number | null;
+  /** Krótki opis AI (z raw_data.ai_description). Wyświetlany zamiast description gdy dostępny. */
+  ai_description?: string | null;
 }
 
 export const LISTING_STATUSES: { value: ListingStatus; label: string }[] = [

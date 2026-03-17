@@ -143,6 +143,12 @@ function normalizeListing(row: Record<string, unknown>): Listing {
       }
       return null;
     })(),
+    ai_description: (() => {
+      const raw = row.raw_data as { ai_description?: string } | undefined;
+      if (raw?.ai_description && typeof raw.ai_description === "string" && raw.ai_description.trim() !== "")
+        return raw.ai_description.trim();
+      return null;
+    })(),
   };
 }
 
