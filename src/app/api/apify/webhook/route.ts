@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   let body: {
     eventType?: string;
     datasetId?: string;
-    resource?: { id?: string };
+    resource?: { id?: string; defaultDatasetId?: string };
   };
   try {
     body = await req.json();

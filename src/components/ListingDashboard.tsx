@@ -21,7 +21,7 @@ const defaultFilters: FilterState = {
   priceMin: 0,
   priceMax: 500_000_00,
   sortByPrice: "",
-  sortByScore: "",
+  sortByScore: "desc",
   minScore: 0,
 };
 
