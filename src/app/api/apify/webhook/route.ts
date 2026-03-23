@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: "eventType !== ACTOR.RUN.SUCCEEDED" });
   }
 
-  const datasetId = body?.datasetId ?? body?.resource?.id;
+  const datasetId = body?.datasetId ?? body?.resource?.defaultDatasetId ?? body?.resource?.id;
   if (!datasetId) {
     return NextResponse.json(
       { error: "Missing datasetId" },
